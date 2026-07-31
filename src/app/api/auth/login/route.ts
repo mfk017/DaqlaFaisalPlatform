@@ -37,6 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, approved: user.approved });
   } catch (error) {
     console.error('Login error', error);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Internal error';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
