@@ -6,7 +6,7 @@ export async function GET() {
   try {
     await requireAdmin();
     const branches = await db.branch.findMany({
-      orderBy: { created_at: 'asc' }
+      orderBy: { created_at: 'desc' }
     });
     return NextResponse.json({ branches });
   } catch (error) {

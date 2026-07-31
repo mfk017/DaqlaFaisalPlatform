@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -32,7 +32,7 @@ model Profile {
 model UserRole {
   id         String    @id @default(uuid())
   profile_id String
-  role       String    // admin | reception | quality | worker
+  role       String    // admin | reception | quality | worker | supervisor
   specialty  String?   // cutting | embroidery | sewing | buttons | ironing | other
   
   profile    Profile   @relation(fields: [profile_id], references: [id], onDelete: Cascade)
@@ -71,6 +71,8 @@ model PasswordAudit {
 model Branch {
   id         String    @id @default(uuid())
   name       String
+  is_active  Boolean   @default(true)
+  is_archived Boolean  @default(false)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   orders     Order[]
@@ -79,14 +81,16 @@ model Branch {
 }
 
 model Category {
-  id         String          @id @default(uuid())
-  name       String
-  is_active  Boolean         @default(false)
-  created_at DateTime        @default(now())
-  updated_at DateTime        @updatedAt
+  id               String          @id @default(uuid())
+  name             String
+  is_active        Boolean         @default(false)
+  is_archived      Boolean         @default(false)
+  current_version  Int             @default(1)
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
 
-  stages     WorkflowStage[]
-  orders     Order[]
+  stages           WorkflowStage[]
+  orders           Order[]
 
   @@map("categories")
 }
@@ -94,10 +98,12 @@ model Category {
 model WorkflowStage {
   id                 String   @id @default(uuid())
   category_id        String
+  version            Int      @default(1)
   name               String   // e.g., "قص القماش"
   order_index        Int
   is_quality         Boolean  @default(false)
   is_final           Boolean  @default(false)
+  is_archived        Boolean  @default(false)
   
   allowed_role       String?  // admin, reception, quality, worker
   allowed_specialty  String?  // cutting, embroidery, sewing, etc.
@@ -118,6 +124,7 @@ model Order {
   invoice_number      String   @unique
   customer_name       String
   category_id         String
+  workflow_version    Int      @default(1)
   branch_id           String
   current_stage_id    String
   current_assignee_id String

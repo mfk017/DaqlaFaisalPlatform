@@ -2,7 +2,7 @@ import { requireApproved } from "@/lib/auth";
 import Link from "next/link";
 import { getT } from "@/lib/i18n";
 import { db } from "@/lib/db";
-import { UserCircle, LogOut, Home, Users, Settings, BarChart2 } from "lucide-react";
+import { UserCircle, LogOut, Home, Users, Settings, BarChart2, Activity } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 export default async function AppLayout({
@@ -13,14 +13,16 @@ export default async function AppLayout({
   const session = await requireApproved();
   const t = getT("ar");
   const isAdmin = session.roles.includes("admin");
+  const isSupervisor = session.roles.includes("supervisor");
+  const isManagement = isAdmin || isSupervisor || session.roles.includes("reception");
 
   const profile = await db.profile.findUnique({
     where: { id: session.sub }
   });
 
-  // Determine display role
   let roleDisplay = "مستخدم";
   if (isAdmin) roleDisplay = "مدير (Admin)";
+  else if (isSupervisor) roleDisplay = "مشرف (Supervisor)";
   else if (session.roles.includes("worker")) roleDisplay = `عامل (${session.specialty || ''})`;
   else if (session.roles.includes("quality")) roleDisplay = "مفتش جودة";
   else if (session.roles.includes("reception")) roleDisplay = "استقبال";
@@ -41,15 +43,28 @@ export default async function AppLayout({
             {t("orders")}
           </Link>
           
+          {(isAdmin || isSupervisor) && (
+            <>
+              <Link href="/workload" className="nav-link">
+                <Users size={20} />
+                أعباء العمل (Workload)
+              </Link>
+              <Link href="/reports" className="nav-link">
+                <BarChart2 size={20} />
+                التقارير
+              </Link>
+              <Link href="/live" className="nav-link" target="_blank">
+                <Activity size={20} />
+                شاشة الإنتاج (Live)
+              </Link>
+            </>
+          )}
+          
           {isAdmin && (
             <>
               <Link href="/admin/users" className="nav-link">
                 <Users size={20} />
                 {t("users")}
-              </Link>
-              <Link href="/reports" className="nav-link">
-                <BarChart2 size={20} />
-                التقارير
               </Link>
               <Link href="/admin/branches" className="nav-link">
                 <Settings size={20} />

@@ -106,6 +106,15 @@ export function ReportsDashboard() {
           <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>من أصل {headline.totalOrders} ضمن الفترة</div>
         </div>
 
+        <div className="auth-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', borderColor: headline.lateOrderPercentage > 15 ? 'var(--danger-bg)' : 'transparent' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: headline.lateOrderPercentage > 15 ? 'var(--danger)' : 'var(--warning)' }}>
+            <AlertTriangle size={20} />
+            <span style={{ fontWeight: 600 }}>نسبة الطلبات المتأخرة</span>
+          </div>
+          <div className="font-mono" style={{ fontSize: '2.5rem', fontWeight: 800, color: headline.lateOrderPercentage > 15 ? 'var(--danger)' : 'var(--text-primary)' }}>{headline.lateOrderPercentage}%</div>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>بمتوسط تأخير {headline.avgDelayHours} ساعة</div>
+        </div>
+
         <div className="auth-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--success)' }}>
             <CheckCircle size={20} />
@@ -230,6 +239,41 @@ export function ReportsDashboard() {
                 </tbody>
               </table>
             )}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        {/* Average Time Per Stage */}
+        <div className="auth-card" style={{ maxWidth: '100%', height: '350px', display: 'flex', flexDirection: 'column' }}>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>متوسط وقت الإنجاز لكل مرحلة</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>يساعد في تحديد أبطأ الأقسام أو المراحل في المصنع.</p>
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={charts.stageDurations} layout="vertical" margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border-light)" />
+                <XAxis type="number" tick={{fontSize: 12, fill: 'var(--text-secondary)'}} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" tick={{fontSize: 12, fill: 'var(--text-secondary)', fontWeight: 600}} axisLine={false} tickLine={false} width={100} />
+                <Tooltip cursor={{fill: 'var(--bg-page)'}} contentStyle={{borderRadius: 'var(--radius)', border: 'none', boxShadow: 'var(--shadow-lg)'}}/>
+                <Bar dataKey="avgHours" fill="var(--warning)" radius={[0, 4, 4, 0]} name="متوسط الوقت (ساعة)" barSize={24} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Daily Trend */}
+        <div className="auth-card" style={{ maxWidth: '100%', height: '350px', display: 'flex', flexDirection: 'column' }}>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>معدل استلام الطلبات اليومي (Trend)</h2>
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={charts.ordersPerDay} margin={{ top: 20, right: 30, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-light)" />
+                <XAxis dataKey="date" tick={{fontSize: 12, fill: 'var(--text-secondary)'}} axisLine={false} tickLine={false} />
+                <YAxis tick={{fontSize: 12, fill: 'var(--text-secondary)'}} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip cursor={{stroke: 'var(--border-light)'}} contentStyle={{borderRadius: 'var(--radius)', border: 'none', boxShadow: 'var(--shadow-lg)'}}/>
+                <Line type="monotone" dataKey="count" stroke="var(--primary)" strokeWidth={3} dot={{r: 4, fill: 'var(--primary)'}} activeDot={{r: 8}} name="عدد الطلبات" />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
 

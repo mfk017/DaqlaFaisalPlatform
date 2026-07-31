@@ -34,7 +34,7 @@ export async function GET(req: Request) {
         include: { current_stage: true, category: true }
       }),
       db.orderHistory.findMany({
-        where: { action: 'returned', created_at: { gte: startDate, lte: endDate } },
+        where: { created_at: { gte: startDate, lte: endDate } },
         include: { stage: true, assigned_to: true }
       })
     ]);
@@ -63,7 +63,8 @@ export async function GET(req: Request) {
     ];
 
     // 3. Defect Metrics & First-Pass Yield
-    const returnedOrderIds = new Set(allHistory.map(h => h.order_id));
+    const returnedHistory = allHistory.filter(h => h.action === 'returned');
+    const returnedOrderIds = new Set(returnedHistory.map(h => h.order_id));
     const defectRate = allOrders.length > 0 ? (returnedOrderIds.size / allOrders.length) * 100 : 0;
     
     // First-Pass Yield = (Completed without returns / Total Completed) * 100
@@ -80,22 +81,42 @@ export async function GET(req: Request) {
     const firstPassYield = totalCompleted > 0 ? (completedWithoutReturns / totalCompleted) * 100 : 0;
 
     const defectStageMap: Record<string, number> = {};
-    allHistory.forEach(h => {
-      const stageName = h.stage.name;
-      defectStageMap[stageName] = (defectStageMap[stageName] || 0) + 1;
+    returnedHistory.forEach(h => {
+      if (h.stage) {
+        const stageName = h.stage.name;
+        defectStageMap[stageName] = (defectStageMap[stageName] || 0) + 1;
+      }
     });
     const defectOrigin = Object.entries(defectStageMap).map(([name, count]) => ({ name, count })).sort((a,b)=> b.count - a.count);
 
-    // 4. Cycle Time (Overall, by Category, by Branch)
+    // 4. Cycle Time (Overall, by Category, by Branch) and Late Orders
     let totalCycleTimeMs = 0;
+    let lateOrdersCount = 0;
+    let totalDelayMs = 0;
     const catCycle: Record<string, { sum: number, count: number }> = {};
     const branchCycle: Record<string, { sum: number, count: number }> = {};
     const catVol: Record<string, number> = {};
     const branchVol: Record<string, number> = {};
 
+    // Orders per day trend
+    const ordersPerDayMap: Record<string, number> = {};
+
     allOrders.forEach(o => {
       catVol[o.category.name] = (catVol[o.category.name] || 0) + 1;
       branchVol[o.branch.name] = (branchVol[o.branch.name] || 0) + 1;
+
+      const dayKey = new Date(o.created_at).toISOString().split('T')[0];
+      ordersPerDayMap[dayKey] = (ordersPerDayMap[dayKey] || 0) + 1;
+
+      // Late calculation
+      if (o.due_date) {
+        const due = new Date(o.due_date).getTime();
+        const end = o.status === 'completed' ? new Date(o.updated_at).getTime() : new Date().getTime();
+        if (end > due) {
+          lateOrdersCount++;
+          totalDelayMs += (end - due);
+        }
+      }
 
       if (o.status === 'completed') {
         const cycleTime = new Date(o.updated_at).getTime() - new Date(o.created_at).getTime();
@@ -125,7 +146,7 @@ export async function GET(req: Request) {
       return { name, count, avgCycleHours: parseFloat(avgH.toFixed(1)) };
     });
 
-    // 5. Worker Performance
+    // 5. Worker Performance & Stage Durations
     const workerProfiles = await db.profile.findMany({
       where: { approved: true, roles: { some: { role: 'worker' } } },
       include: {
@@ -146,6 +167,44 @@ export async function GET(req: Request) {
       };
     }).sort((a, b) => b.completedTasks - a.completedTasks);
 
+    // Calculate stage durations from allHistory
+    // We group allHistory by order_id, sort them, and use a similar logic to calculateTimeTracking
+    const historyByOrder: Record<string, any[]> = {};
+    for (const h of allHistory) {
+      if (!historyByOrder[h.order_id]) historyByOrder[h.order_id] = [];
+      historyByOrder[h.order_id].push(h);
+    }
+
+    const stageDurationMap: Record<string, { totalMs: number, count: number }> = {};
+    
+    for (const orderId in historyByOrder) {
+      const sorted = historyByOrder[orderId].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      let lastTransitionTime: Date | null = null;
+      
+      for (const event of sorted) {
+        if (event.action === 'created') {
+          lastTransitionTime = new Date(event.created_at);
+        } else if (event.action === 'handed_off' || event.action === 'returned' || event.action === 'completed') {
+          if (lastTransitionTime && event.stage) {
+            const duration = new Date(event.created_at).getTime() - lastTransitionTime.getTime();
+            if (!stageDurationMap[event.stage.name]) stageDurationMap[event.stage.name] = { totalMs: 0, count: 0 };
+            stageDurationMap[event.stage.name].totalMs += duration;
+            stageDurationMap[event.stage.name].count++;
+          }
+          lastTransitionTime = new Date(event.created_at);
+        }
+      }
+    }
+
+    const stageDurations = Object.entries(stageDurationMap).map(([name, data]) => {
+      const avgH = (data.totalMs / data.count) / (1000 * 60 * 60);
+      return { name, avgHours: parseFloat(avgH.toFixed(1)) };
+    }).sort((a, b) => b.avgHours - a.avgHours);
+
+    const avgDelayHours = lateOrdersCount > 0 ? (totalDelayMs / lateOrdersCount) / (1000 * 60 * 60) : 0;
+    const lateOrderPercentage = allOrders.length > 0 ? (lateOrdersCount / allOrders.length) * 100 : 0;
+    const ordersPerDay = Object.entries(ordersPerDayMap).map(([date, count]) => ({ date, count })).sort((a,b) => a.date.localeCompare(b.date));
+
     return NextResponse.json({
       headline: {
         totalOrders: allOrders.length,
@@ -153,7 +212,9 @@ export async function GET(req: Request) {
         completedWithinRange: totalCompleted,
         firstPassYield: firstPassYield.toFixed(1),
         defectRate: defectRate.toFixed(1),
-        avgCycleTimeHours: avgCycleTimeHours.toFixed(1)
+        avgCycleTimeHours: avgCycleTimeHours.toFixed(1),
+        lateOrderPercentage: lateOrderPercentage.toFixed(1),
+        avgDelayHours: avgDelayHours.toFixed(1)
       },
       charts: {
         wipByStage,
@@ -161,7 +222,9 @@ export async function GET(req: Request) {
         defectOrigin,
         volumeByCategory,
         volumeByBranch,
-        workerPerformance
+        workerPerformance,
+        ordersPerDay,
+        stageDurations
       },
       raw: allOrders // Needed for CSV export
     });

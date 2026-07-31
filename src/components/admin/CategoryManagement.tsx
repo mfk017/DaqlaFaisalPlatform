@@ -44,18 +44,20 @@ export function CategoryManagement() {
     fetchCategories();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا التصنيف؟ جميع المراحل المرتبطة سيتم حذفها أيضاً.")) return;
-    
-    await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+  const handleToggle = async (id: string, is_archived: boolean) => {
+    await fetch(`/api/admin/categories/${id}/toggle`, { 
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_archived: !is_archived })
+    });
     fetchCategories();
   };
 
   if (loading) return <div>جاري التحميل...</div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '800px' }}>
-      <form onSubmit={handleAdd} style={{ display: 'flex', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <form onSubmit={handleAdd} style={{ display: 'flex', gap: '12px', maxWidth: '600px' }}>
         <input
           type="text"
           className="form-input"
@@ -74,49 +76,46 @@ export function CategoryManagement() {
           لا يوجد تصنيفات حالياً
         </div>
       ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>التصنيف</th>
-              <th>المراحل</th>
-              <th>الحالة</th>
-              <th style={{ width: '120px' }}>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((c) => (
-              <tr key={c.id}>
-                <td style={{ fontWeight: 600 }}>{c.name}</td>
-                <td>{c._count.stages} مراحل</td>
-                <td>
-                  <span className={`badge ${c.is_active ? 'approved' : 'pending'}`}>
-                    {c.is_active ? 'نشط' : 'غير مكتمل'}
-                  </span>
-                </td>
-                <td>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <Link 
-                      href={`/admin/categories/${c.id}`}
-                      className="btn" 
-                      style={{ padding: '6px', width: 'auto', background: 'var(--primary)', color: 'white', textDecoration: 'none' }}
-                      title="بناء المسار"
-                    >
-                      <Settings2 size={16} />
-                    </Link>
-                    <button 
-                      onClick={() => handleDelete(c.id)}
-                      className="btn" 
-                      style={{ padding: '6px', width: 'auto', background: 'var(--danger-bg)', color: 'var(--danger)' }}
-                      title="حذف"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          {categories.map((c) => (
+            <div key={c.id} className="auth-card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px', opacity: c.is_archived ? 0.6 : 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', textDecoration: c.is_archived ? 'line-through' : 'none' }}>{c.name}</h3>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                    عدد المراحل: {c._count.stages}
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                  <span className="badge" style={{ background: c.is_archived ? 'var(--bg-card)' : (c.is_active ? 'var(--success-bg)' : 'var(--warning-bg)'), color: c.is_archived ? 'var(--text-secondary)' : (c.is_active ? 'var(--success)' : 'var(--warning)') }}>
+                    {c.is_archived ? 'مؤرشف' : (c.is_active ? 'مفعل' : 'غير مكتمل')}
+                  </span>
+                  {!c.is_active && !c.is_archived && (
+                    <span style={{ fontSize: '0.7rem', color: 'var(--warning)', maxWidth: '120px', textAlign: 'left' }}>
+                      يحتاج إلى مرحلة جودة ومرحلة تسليم
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                <Link href={`/admin/categories/${c.id}`} style={{ flex: 1 }}>
+                  <button className="btn btn-secondary" style={{ width: '100%' }}>
+                    تعديل سير العمل
+                  </button>
+                </Link>
+                <button 
+                  onClick={() => handleToggle(c.id, c.is_archived)}
+                  className="btn" 
+                  style={{ padding: '8px', width: 'auto', background: c.is_archived ? 'var(--primary)' : 'var(--danger-bg)', color: c.is_archived ? '#fff' : 'var(--danger)' }}
+                  title={c.is_archived ? "تنشيط" : "أرشفة"}
+                >
+                  {c.is_archived ? 'تنشيط' : 'أرشفة'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

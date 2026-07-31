@@ -12,9 +12,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const order = await db.order.findUnique({
     where: { id: p.id },
     include: {
-      category: {
-        include: { stages: { orderBy: { order_index: 'asc' } } }
-      },
+      category: true,
       branch: true,
       current_stage: true,
       current_assignee: { select: { id: true, full_name: true } },
@@ -33,8 +31,24 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     notFound();
   }
 
+  // Fetch the specific version of stages for this order
+  const stages = await db.workflowStage.findMany({
+    where: { category_id: order.category_id, version: order.workflow_version },
+    orderBy: { order_index: 'asc' }
+  });
+
+  // Inject stages into category object so OrderDetail works seamlessly
+  const orderWithStages = {
+    ...order,
+    category: {
+      ...order.category,
+      stages
+    }
+  };
+
   const isAdmin = session.roles.includes("admin") || session.roles.includes("reception");
-  const canAct = order.current_assignee_id === session.sub || isAdmin;
+  const isSupervisor = session.roles.includes("supervisor");
+  const canAct = order.current_assignee_id === session.sub || isAdmin || isSupervisor;
 
   return (
     <div>
@@ -45,7 +59,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>تفاصيل الطلب: <span style={{ color: 'var(--primary)', fontFamily: 'monospace' }}>{order.invoice_number}</span></h1>
       </div>
       
-      <OrderDetail order={order} canAct={canAct} currentUserId={session.sub} isAdmin={isAdmin} />
+      <OrderDetail order={orderWithStages} canAct={canAct} currentUserId={session.sub} isAdmin={isAdmin} />
     </div>
   );
 }

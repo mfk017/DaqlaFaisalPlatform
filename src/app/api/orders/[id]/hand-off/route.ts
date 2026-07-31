@@ -48,8 +48,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // Only current assignee, admin, or reception can hand-off
-    if (order.current_assignee_id !== session.sub && !session.roles.includes('admin') && !session.roles.includes('reception')) {
+    // Only current assignee, admin, reception, or supervisor can hand-off
+    if (
+      order.current_assignee_id !== session.sub && 
+      !session.roles.includes('admin') && 
+      !session.roles.includes('reception') &&
+      !session.roles.includes('supervisor')
+    ) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

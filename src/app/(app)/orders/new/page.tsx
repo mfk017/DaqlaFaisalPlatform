@@ -9,10 +9,18 @@ export default async function NewOrderPage() {
     redirect("/orders");
   }
 
-  const [categories, branches] = await Promise.all([
-    db.category.findMany({ where: { is_active: true }, include: { stages: { orderBy: { order_index: 'asc' } } } }),
-    db.branch.findMany({ orderBy: { name: 'asc' } })
-  ]);
+  const categoriesRaw = await db.category.findMany({ where: { is_active: true, is_archived: false } });
+  
+  // For each category, we need to fetch ONLY the stages matching its current_version
+  const categories = await Promise.all(categoriesRaw.map(async (c) => {
+    const stages = await db.workflowStage.findMany({
+      where: { category_id: c.id, version: c.current_version },
+      orderBy: { order_index: 'asc' }
+    });
+    return { ...c, stages };
+  }));
+
+  const branches = await db.branch.findMany({ where: { is_archived: false }, orderBy: { name: 'asc' } });
 
   return (
     <div>

@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const filter = searchParams.get('filter') || 'all';
 
-    const isAdmin = session.roles.includes('admin') || session.roles.includes('reception');
+    const isAdmin = session.roles.includes('admin') || session.roles.includes('reception') || session.roles.includes('supervisor');
 
     const whereClause: any = {};
     
@@ -73,17 +73,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
-    // Get the first stage of the category
+    // We need the category to know its current_version
     const category = await db.category.findUnique({
-      where: { id: category_id },
-      include: { stages: { orderBy: { order_index: 'asc' }, take: 1 } }
+      where: { id: category_id }
     });
 
-    if (!category || category.stages.length === 0 || !category.is_active) {
+    if (!category || !category.is_active) {
       return NextResponse.json({ error: 'Invalid or inactive category' }, { status: 400 });
     }
 
-    const firstStage = category.stages[0];
+    // Get the first stage of the CURRENT version
+    const firstStage = await db.workflowStage.findFirst({
+      where: { category_id: category_id, version: category.current_version },
+      orderBy: { order_index: 'asc' }
+    });
+
+    if (!firstStage) {
+      return NextResponse.json({ error: 'Category has no stages' }, { status: 400 });
+    }
 
     // Generate Invoice Number INV-{YYYY}-{0001}
     const currentYear = new Date().getFullYear();
@@ -107,6 +114,7 @@ export async function POST(req: Request) {
           invoice_number,
           customer_name,
           category_id,
+          workflow_version: category.current_version,
           branch_id,
           current_stage_id: firstStage.id,
           current_assignee_id: assignee_id,

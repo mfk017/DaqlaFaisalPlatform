@@ -8,6 +8,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line
 } from 'recharts';
+import { FactoryHeatMap } from './FactoryHeatMap';
 
 export function DashboardContent() {
   const [data, setData] = useState<any>(null);
@@ -95,6 +96,9 @@ export function DashboardContent() {
               </div>
             </div>
           </div>
+
+          {/* Factory Heat Map */}
+          <FactoryHeatMap stages={charts.ordersByStage} />
           
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
             {/* Charts */}

@@ -54,6 +54,21 @@ export function WorkflowBuilder({ categoryId }: { categoryId: string }) {
     e.preventDefault();
     if (!name.trim()) return;
 
+    if (category) {
+      const hasQuality = category.stages.some(s => s.is_quality);
+      const hasFinal = category.stages.some(s => s.is_final);
+      
+      if (isQuality && hasQuality) {
+        alert("لا يمكن إضافة أكثر من مرحلة جودة واحدة.");
+        return;
+      }
+      
+      if (isFinal && hasFinal) {
+        alert("لا يمكن إضافة أكثر من مرحلة تسليم نهائي واحدة.");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     await fetch(`/api/admin/categories/${categoryId}/stages`, {
       method: "POST",

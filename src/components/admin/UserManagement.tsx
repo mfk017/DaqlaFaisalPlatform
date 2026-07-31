@@ -119,6 +119,7 @@ export function UserManagement() {
             <h2 className="auth-title">تحديد الصلاحية</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button className="btn" onClick={() => assignRole(roleModalId, 'admin')}>مدير (Admin)</button>
+              <button className="btn" onClick={() => assignRole(roleModalId, 'supervisor')}>مشرف (Supervisor)</button>
               <button className="btn" onClick={() => assignRole(roleModalId, 'reception')}>استقبال (Reception)</button>
               <button className="btn" onClick={() => assignRole(roleModalId, 'quality')}>جودة (Quality)</button>
               

@@ -7,8 +7,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     await requireAdmin();
     const p = await params;
 
-    await db.branch.delete({
-      where: { id: p.id }
+    await db.branch.update({
+      where: { id: p.id },
+      data: { is_archived: true }
     });
 
     return NextResponse.json({ success: true });

@@ -11,7 +11,7 @@ export async function GET() {
           select: { stages: true }
         }
       },
-      orderBy: { created_at: 'asc' }
+      orderBy: { created_at: 'desc' }
     });
     return NextResponse.json({ categories });
   } catch (error) {

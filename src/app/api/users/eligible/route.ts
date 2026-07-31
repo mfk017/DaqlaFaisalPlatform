@@ -9,14 +9,10 @@ export async function GET(req: Request) {
     const role = searchParams.get('role');
     const specialty = searchParams.get('specialty');
 
-    const isAdminOrReception = session.roles.includes('admin') || session.roles.includes('reception');
-
     const whereClause: any = { approved: true };
     
-    // Only apply role filters if the user is not admin/reception, OR if we want to default to filtering but maybe we shouldn't.
-    // The request: "make the reception have the ability to make new order and according to the product ctegory iy will be assigned to wqho ever even himself"
-    // We'll ignore the strict role/specialty filter if the creator is admin/reception.
-    if (!isAdminOrReception && (role || specialty)) {
+    // Apply role filters if they are provided in the query params
+    if (role || specialty) {
       whereClause.roles = {
         some: {
           ...(role ? { role } : {}),

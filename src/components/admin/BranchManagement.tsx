@@ -6,6 +6,7 @@ import { Trash2, Plus } from "lucide-react";
 type Branch = {
   id: string;
   name: string;
+  is_archived: boolean;
 };
 
 export function BranchManagement() {
@@ -41,10 +42,15 @@ export function BranchManagement() {
     fetchBranches();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الفرع؟")) return;
-    
-    await fetch(`/api/admin/branches/${id}`, { method: "DELETE" });
+  const handleToggle = async (id: string, is_archived: boolean) => {
+    const endpoint = is_archived ? "restore" : "archive";
+    // We can use a PUT request to a new route, or we can use the DELETE route for archiving and a new route for restore.
+    // For simplicity, let's create a toggle route.
+    await fetch(`/api/admin/branches/${id}/toggle`, { 
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_archived: !is_archived })
+    });
     fetchBranches();
   };
 
@@ -75,21 +81,26 @@ export function BranchManagement() {
           <thead>
             <tr>
               <th>الفرع</th>
-              <th style={{ width: '80px' }}>إجراءات</th>
+              <th style={{ width: '120px' }}>الحالة</th>
+              <th style={{ width: '120px' }}>إجراءات</th>
             </tr>
           </thead>
           <tbody>
             {branches.map((b) => (
               <tr key={b.id}>
-                <td>{b.name}</td>
+                <td style={{ opacity: b.is_archived ? 0.5 : 1, textDecoration: b.is_archived ? 'line-through' : 'none' }}>{b.name}</td>
+                <td>
+                  <span className="badge" style={{ background: b.is_archived ? 'var(--bg-card)' : 'var(--success-bg)', color: b.is_archived ? 'var(--text-secondary)' : 'var(--success)' }}>
+                    {b.is_archived ? 'مؤرشف' : 'نشط'}
+                  </span>
+                </td>
                 <td>
                   <button 
-                    onClick={() => handleDelete(b.id)}
+                    onClick={() => handleToggle(b.id, b.is_archived)}
                     className="btn" 
-                    style={{ padding: '6px', width: 'auto', background: 'var(--danger-bg)', color: 'var(--danger)' }}
-                    title="حذف"
+                    style={{ padding: '6px 12px', width: 'auto', background: b.is_archived ? 'var(--primary)' : 'var(--danger-bg)', color: b.is_archived ? '#fff' : 'var(--danger)' }}
                   >
-                    <Trash2 size={16} />
+                    {b.is_archived ? 'تنشيط' : 'أرشفة'}
                   </button>
                 </td>
               </tr>
