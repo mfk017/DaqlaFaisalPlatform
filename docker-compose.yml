@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: factory_workflow_db
+    environment:
+      POSTGRES_USER: factory_user
+      POSTGRES_PASSWORD: factory_pass
+      POSTGRES_DB: factory_workflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - factory_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U factory_user -d factory_workflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  factory_postgres_data:
+    driver: local

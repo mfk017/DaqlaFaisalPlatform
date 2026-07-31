@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model Profile {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  username      String    @unique
+  full_name     String
+  password_hash String
+  approved      Boolean   @default(false)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  roles               UserRole[]
+  reset_tokens        PasswordResetToken[]
+  password_audit      PasswordAudit[]
+  current_orders      Order[]
+  history_actions     OrderHistory[] @relation("ActorRelation")
+  history_assignments OrderHistory[] @relation("AssignedToRelation")
+
+  @@map("profiles")
+}
+
+model UserRole {
+  id         String    @id @default(uuid())
+  profile_id String
+  role       String    // admin | reception | quality | worker
+  specialty  String?   // cutting | embroidery | sewing | buttons | ironing | other
+  
+  profile    Profile   @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@unique([profile_id, role])
+  @@map("user_roles")
+}
+
+model PasswordResetToken {
+  id         String    @id @default(uuid())
+  profile_id String
+  token_hash String    @unique
+  expires_at DateTime
+  used       Boolean   @default(false)
+  created_at DateTime  @default(now())
+
+  profile    Profile   @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
+
+model PasswordAudit {
+  id         String    @id @default(uuid())
+  profile_id String?
+  email      String
+  event      String    // 'requested' | 'completed'
+  ip         String?
+  user_agent String?
+  created_at DateTime  @default(now())
+
+  profile    Profile?  @relation(fields: [profile_id], references: [id], onDelete: SetNull)
+
+  @@map("password_audit")
+}
+
+model Branch {
+  id         String    @id @default(uuid())
+  name       String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  orders     Order[]
+
+  @@map("branches")
+}
+
+model Category {
+  id         String          @id @default(uuid())
+  name       String
+  is_active  Boolean         @default(false)
+  created_at DateTime        @default(now())
+  updated_at DateTime        @updatedAt
+
+  stages     WorkflowStage[]
+  orders     Order[]
+
+  @@map("categories")
+}
+
+model WorkflowStage {
+  id                 String   @id @default(uuid())
+  category_id        String
+  name               String   // e.g., "قص القماش"
+  order_index        Int
+  is_quality         Boolean  @default(false)
+  is_final           Boolean  @default(false)
+  
+  allowed_role       String?  // admin, reception, quality, worker
+  allowed_specialty  String?  // cutting, embroidery, sewing, etc.
+  estimated_hours    Int      @default(24)
+
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  category           Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  orders             Order[]
+  order_histories    OrderHistory[]
+
+  @@map("workflow_stages")
+}
+
+model Order {
+  id                  String   @id @default(uuid())
+  invoice_number      String   @unique
+  customer_name       String
+  category_id         String
+  branch_id           String
+  current_stage_id    String
+  current_assignee_id String
+  status              String   @default("in_progress") // in_progress, completed, returned, canceled
+  priority            String   @default("normal")      // normal, rush
+  due_date            DateTime?
+  cancel_reason       String?
+  canceled_at         DateTime?
+  
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  category            Category      @relation(fields: [category_id], references: [id])
+  branch              Branch        @relation(fields: [branch_id], references: [id])
+  current_stage       WorkflowStage @relation(fields: [current_stage_id], references: [id])
+  current_assignee    Profile       @relation(fields: [current_assignee_id], references: [id])
+  history             OrderHistory[]
+
+  @@map("orders")
+}
+
+model OrderHistory {
+  id               String   @id @default(uuid())
+  order_id         String
+  stage_id         String
+  actor_id         String
+  assigned_to_id   String?
+  action           String   // created, handed_off, completed, returned
+  notes            String?
+  image_url        String?
+  
+  created_at       DateTime @default(now())
+
+  order            Order         @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  stage            WorkflowStage @relation(fields: [stage_id], references: [id])
+  actor            Profile       @relation("ActorRelation", fields: [actor_id], references: [id])
+  assigned_to      Profile?      @relation("AssignedToRelation", fields: [assigned_to_id], references: [id])
+
+  @@map("order_history")
+}
+
+model Specialty {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  label      String
+  created_at DateTime @default(now())
+
+  @@map("specialties")
+}
