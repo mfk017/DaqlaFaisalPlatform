@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -6,6 +7,8 @@ import { User, Calendar, CheckCircle, ArrowRightCircle, AlertTriangle, FastForwa
 import { ProductionLine } from "./ProductionLine";
 
 export function OrderDetail({ order, canAct, currentUserId, isAdmin }: { order: any, canAct: boolean, currentUserId: string, isAdmin: boolean }) {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -146,7 +149,7 @@ export function OrderDetail({ order, canAct, currentUserId, isAdmin }: { order: 
           
           <div className="auth-card" style={{ maxWidth: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>
-              <h2 style={{ fontSize: '1.2rem', margin: 0 }}>بيانات الطلب</h2>
+              <h2 style={{ fontSize: '1.2rem', margin: 0 }}>{t("order_data")}</h2>
               {isAdmin && !isEditing && order.status !== 'canceled' && (
                 <button className="btn btn-secondary" style={{ width: 'auto', padding: '4px 12px' }} onClick={() => setIsEditing(true)}>
                   تعديل الأولوية / التسليم
@@ -158,52 +161,52 @@ export function OrderDetail({ order, canAct, currentUserId, isAdmin }: { order: 
               <form onSubmit={handleEdit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="form-group">
-                    <label className="form-label">الأولوية</label>
+                    <label className="form-label">{t("priority")}</label>
                     <select className="form-input" value={editPriority} onChange={(e) => setEditPriority(e.target.value)}>
-                      <option value="normal">عادي</option>
-                      <option value="rush">🔥 مستعجل</option>
+                      <option value="normal">{t("ordinary")}</option>
+                      <option value="rush">{t("urgent_fire")}</option>
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">تاريخ التسليم المتوقع (اختياري)</label>
+                    <label className="form-label">{t("expected_delivery_date_optional")}</label>
                     <input type="date" className="form-input font-mono" value={editDueDate} onChange={(e) => setEditDueDate(e.target.value)} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button type="submit" className="btn" disabled={loading}>حفظ التعديلات</button>
-                  <button type="button" className="btn btn-secondary" onClick={() => setIsEditing(false)}>إلغاء</button>
+                  <button type="submit" className="btn" disabled={loading}>{t("save_changes")}</button>
+                  <button type="button" className="btn btn-secondary" onClick={() => setIsEditing(false)}>{t("cancel")}</button>
                 </div>
               </form>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>العميل</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>{t("customer")}</span>
                   <span style={{ fontWeight: 600 }}>{order.customer_name}</span>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>التصنيف</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>{t("category")}</span>
                   <span style={{ fontWeight: 600 }}>{order.category.name}</span>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>الأولوية</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>{t("priority")}</span>
                   <span style={{ fontWeight: 600, color: order.priority === 'rush' ? 'var(--warning)' : 'var(--text-primary)' }}>
-                    {order.priority === 'rush' ? '🔥 مستعجل' : 'عادي'}
+                    {order.priority === 'rush' ? t("urgent_fire") : t("ordinary")}
                   </span>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>تاريخ التسليم المتوقع</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>{t("expected_delivery_date")}</span>
                   <span className="font-mono" style={{ fontWeight: 600, color: order.due_date && order.status !== 'completed' && new Date() > new Date(order.due_date) ? 'var(--danger)' : 'var(--text-primary)' }}>
                     {order.due_date ? new Date(order.due_date).toLocaleDateString('ar-SA') : 'غير محدد'}
                   </span>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>الفرع الموجه إليه</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>{t("target_branch")}</span>
                   <span style={{ fontWeight: 600 }}>{order.branch.name}</span>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>الحالة العامة</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>{t("general_status")}</span>
                   <span className={`badge ${order.status === 'completed' ? 'approved' : order.status === 'returned' ? 'pending animate-pulse' : order.status === 'canceled' ? 'pending' : ''}`} style={{ background: order.status === 'returned' || order.status === 'canceled' ? 'var(--danger-bg)' : undefined, color: order.status === 'returned' || order.status === 'canceled' ? 'var(--danger)' : undefined, border: order.status === 'returned' || order.status === 'canceled' ? '1px solid var(--danger)' : undefined }}>
-                    {order.status === 'in_progress' ? 'جاري التنفيذ' : order.status === 'completed' ? 'منجز وتم التسليم' : order.status === 'canceled' ? 'ملغي' : 'مرفوض ومُعاد'}
+                    {order.status === 'in_progress' ? t("executing") : order.status === 'completed' ? 'منجز وتم التسليم' : order.status === 'canceled' ? t("cancelled") : 'مرفوض ومُعاد'}
                   </span>
                 </div>
               </div>
@@ -211,7 +214,7 @@ export function OrderDetail({ order, canAct, currentUserId, isAdmin }: { order: 
           </div>
 
           <div className="auth-card" style={{ maxWidth: '100%' }}>
-            <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>سجل الحركات (Timeline)</h2>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>{t("timeline")}</h2>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {order.history.map((h: any, i: number) => (
@@ -269,14 +272,14 @@ export function OrderDetail({ order, canAct, currentUserId, isAdmin }: { order: 
         {/* Right Column: Hand-off Actions */}
         <div style={{ position: 'sticky', top: '24px' }}>
           <div className="auth-card">
-            <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>العملية الحالية</h2>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>{t("current_operation")}</h2>
             
             <div style={{ padding: '16px', background: 'var(--bg-page)', borderRadius: 'var(--radius)', marginBottom: '16px', border: '1px solid var(--border-light)' }}>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>المرحلة الحالية</span>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>{t("current_stage")}</span>
               <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--primary)', display: 'block', marginBottom: '8px' }}>
                 {order.current_stage?.name}
               </span>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>الموظف المسؤول الحالي</span>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block' }}>{t("current_responsible_employee")}</span>
               <span style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <User size={16} /> {order.current_assignee?.full_name}
               </span>
@@ -287,13 +290,13 @@ export function OrderDetail({ order, canAct, currentUserId, isAdmin }: { order: 
                 
                 return (
                   <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-light)' }}>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block', marginBottom: '4px' }}>الوقت المستغرق في هذه المرحلة</span>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'block', marginBottom: '4px' }}>{t("time_taken_in_stage")}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Clock size={16} color={isOverdue ? 'var(--danger)' : 'var(--text-secondary)'} />
                       <span className="font-mono" style={{ fontWeight: 800, fontSize: '1.1rem', color: isOverdue ? 'var(--danger)' : 'var(--text-primary)' }} dir="ltr">
                         {elapsedHours} / {estimatedHours} hr
                       </span>
-                      {isOverdue && <span className="badge animate-pulse" style={{ background: 'var(--danger)', color: 'white', fontWeight: 700 }}>تجاوز الوقت المتوقع!</span>}
+                      {isOverdue && <span className="badge animate-pulse" style={{ background: 'var(--danger)', color: 'white', fontWeight: 700 }}>{t("exceeded_expected_time")}</span>}
                     </div>
                   </div>
                 );
@@ -344,7 +347,7 @@ export function OrderDetail({ order, canAct, currentUserId, isAdmin }: { order: 
                     <div className="form-group">
                       <label className="form-label">{actionType === 'return' ? 'إعادة إلى مرحلة:' : 'المرحلة التالية:'}</label>
                       <select className="form-input" value={nextStageId} onChange={(e) => { setNextStageId(e.target.value); setNextAssigneeId(""); }}>
-                        <option value="">اختر المرحلة...</option>
+                        <option value="">{t("select_stage")}</option>
                         {actionType === 'return' ? (
                           stages.slice(0, currentStageIndex).map((s: any) => (
                             <option key={s.id} value={s.id}>{s.name}</option>
@@ -358,7 +361,7 @@ export function OrderDetail({ order, canAct, currentUserId, isAdmin }: { order: 
                     <div className="form-group">
                       <label className="form-label">الموظف المستلم:</label>
                       <select className="form-input" value={nextAssigneeId} onChange={(e) => setNextAssigneeId(e.target.value)} disabled={!nextStageId}>
-                        <option value="">اختر الموظف...</option>
+                        <option value="">{t("select_employee")}</option>
                         {eligibleUsers.map(u => (
                           <option key={u.id} value={u.id}>{u.full_name}</option>
                         ))}
@@ -373,7 +376,7 @@ export function OrderDetail({ order, canAct, currentUserId, isAdmin }: { order: 
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">المرفقات</label>
+                  <label className="form-label">{t("attachments")}</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <label className="btn btn-secondary" style={{ cursor: 'pointer', width: 'auto', display: 'flex', gap: '8px' }}>
                       <Camera size={16} />

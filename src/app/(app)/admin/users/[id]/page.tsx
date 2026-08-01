@@ -6,9 +6,10 @@ import { ArrowRight, CheckCircle, Activity, Box } from "lucide-react";
 import { getT } from "@/lib/i18n";
 
 export default async function UserActivityPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = await getT();
+
   await requireAdmin();
   const p = await params;
-  const t = getT("ar");
 
   const profile = await db.profile.findUnique({
     where: { id: p.id },
@@ -69,9 +70,9 @@ export default async function UserActivityPage({ params }: { params: Promise<{ i
                     </div>
                     <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>
                       {h.action === 'created' && 'إنشاء طلب جديد'}
-                      {h.action === 'handed_off' && `تسليم من مرحلة: ${h.stage?.name || 'غير معروف'}`}
-                      {h.action === 'completed' && 'تسليم نهائي للطلب'}
-                      {h.action === 'returned' && `إعادة بسبب خلل (جودة) من مرحلة: ${h.stage?.name || 'غير معروف'}`}
+                      {h.action === 'handed_off' && `تسليم من مرحلة: ${h.stage?.name || t("unknown")}`}
+                      {h.action === 'completed' && t("order_final_delivery")}
+                      {h.action === 'returned' && `إعادة بسبب خلل (جودة) من مرحلة: ${h.stage?.name || t("unknown")}`}
                     </div>
                     {h.notes && (
                       <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>

@@ -1,10 +1,13 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 import { useEffect, useState } from "react";
 import { formatDuration } from "@/lib/timeTracking";
 import { Loader2, Activity, CheckCircle, AlertTriangle, Clock } from "lucide-react";
 
 export function LiveBoardClient() {
+  const { t } = useTranslation();
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState(new Date());
@@ -58,8 +61,8 @@ export function LiveBoardClient() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #333', paddingBottom: '20px' }}>
         <div>
-          <h1 style={{ fontSize: '3.5rem', fontWeight: 900, color: 'var(--primary)', margin: 0, lineHeight: 1 }}>شاشة الإنتاج الحية</h1>
-          <div style={{ fontSize: '1.5rem', color: '#aaa', marginTop: '8px' }}>تحديث تلقائي مستمر</div>
+          <h1 style={{ fontSize: '3.5rem', fontWeight: 900, color: 'var(--primary)', margin: 0, lineHeight: 1 }}>{t("live_production_board_2")}</h1>
+          <div style={{ fontSize: '1.5rem', color: '#aaa', marginTop: '8px' }}>{t("auto_refresh")}</div>
         </div>
         <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
           <div className="font-mono" style={{ fontSize: '4rem', fontWeight: 900, lineHeight: 1, letterSpacing: '2px' }}>
@@ -76,7 +79,7 @@ export function LiveBoardClient() {
         <div style={{ background: '#111', border: '2px solid #333', borderRadius: '16px', padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ color: 'var(--primary)', marginBottom: '16px' }}><Activity size={64} /></div>
           <div className="font-mono" style={{ fontSize: '7rem', fontWeight: 900, lineHeight: 1 }}>{data?.activeToday || 0}</div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: '#aaa', marginTop: '8px' }}>نشط الآن</div>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: '#aaa', marginTop: '8px' }}>{t("active_now")}</div>
         </div>
 
         <div style={{ background: '#111', border: '2px solid #333', borderRadius: '16px', padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>

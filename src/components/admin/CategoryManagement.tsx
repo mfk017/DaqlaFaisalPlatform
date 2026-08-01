@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 import { useEffect, useState } from "react";
 import { Trash2, Plus, Settings2 } from "lucide-react";
@@ -12,6 +13,8 @@ type Category = {
 };
 
 export function CategoryManagement() {
+  const { t } = useTranslation();
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -53,7 +56,7 @@ export function CategoryManagement() {
     fetchCategories();
   };
 
-  if (loading) return <div>جاري التحميل...</div>;
+  if (loading) return <div>{t("loading")}</div>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -88,7 +91,7 @@ export function CategoryManagement() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
                   <span className="badge" style={{ background: c.is_archived ? 'var(--bg-card)' : (c.is_active ? 'var(--success-bg)' : 'var(--warning-bg)'), color: c.is_archived ? 'var(--text-secondary)' : (c.is_active ? 'var(--success)' : 'var(--warning)') }}>
-                    {c.is_archived ? 'مؤرشف' : (c.is_active ? 'مفعل' : 'غير مكتمل')}
+                    {c.is_archived ? t("archived") : (c.is_active ? 'مفعل' : t("incomplete"))}
                   </span>
                   {!c.is_active && !c.is_archived && (
                     <span style={{ fontSize: '0.7rem', color: 'var(--warning)', maxWidth: '120px', textAlign: 'left' }}>
@@ -108,9 +111,9 @@ export function CategoryManagement() {
                   onClick={() => handleToggle(c.id, c.is_archived)}
                   className="btn" 
                   style={{ padding: '8px', width: 'auto', background: c.is_archived ? 'var(--primary)' : 'var(--danger-bg)', color: c.is_archived ? '#fff' : 'var(--danger)' }}
-                  title={c.is_archived ? "تنشيط" : "أرشفة"}
+                  title={c.is_archived ? t("activate") : t("archive")}
                 >
-                  {c.is_archived ? 'تنشيط' : 'أرشفة'}
+                  {c.is_archived ? t("activate") : t("archive")}
                 </button>
               </div>
             </div>

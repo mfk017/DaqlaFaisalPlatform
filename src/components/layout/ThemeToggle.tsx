@@ -1,9 +1,12 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
 export function ThemeToggle() {
+  const { t } = useTranslation();
+
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -45,7 +48,7 @@ export function ThemeToggle() {
         padding: '8px', 
         width: 'auto' 
       }}
-      title={isDark ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"}
+      title={isDark ? t("enable_light_mode") : t("enable_dark_mode")}
     >
       {isDark ? <Sun size={18} /> : <Moon size={18} />}
     </button>

@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -11,6 +12,8 @@ import {
 import { FactoryHeatMap } from './FactoryHeatMap';
 
 export function DashboardContent() {
+  const { t } = useTranslation();
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +28,7 @@ export function DashboardContent() {
   }, []);
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '48px', color: 'var(--text-secondary)' }}><Loader2 className="animate-spin" size={32} /></div>;
-  if (!data || data.error) return <div>خطأ في تحميل البيانات</div>;
+  if (!data || data.error) return <div>{t("error_loading_data")}</div>;
 
   const { roles, my_tasks, intake, qualityQueue, staleOrders, activityFeed, charts, metrics } = data;
   
@@ -36,7 +39,7 @@ export function DashboardContent() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>لوحة القيادة</h1>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>{t("dashboard_alt")}</h1>
         {(isAdmin || isReception) && (
           <Link href="/orders/new" className="btn" style={{ width: 'auto', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', fontSize: '1.1rem' }}>
             <PlusCircle size={20} /> إضافة طلب جديد
@@ -72,7 +75,7 @@ export function DashboardContent() {
               </div>
               <div>
                 <div className="font-mono" style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1 }}>{metrics.active}</div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginTop: '4px', fontWeight: 500 }}>طلبات قيد التنفيذ</div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginTop: '4px', fontWeight: 500 }}>{t("orders_in_progress")}</div>
               </div>
             </div>
 
@@ -82,7 +85,7 @@ export function DashboardContent() {
               </div>
               <div>
                 <div className="font-mono" style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--danger)', lineHeight: 1 }}>{metrics.returned}</div>
-                <div style={{ color: 'var(--danger)', fontSize: '0.95rem', marginTop: '4px', fontWeight: 600 }}>طلبات مرفوضة (للتعديل)</div>
+                <div style={{ color: 'var(--danger)', fontSize: '0.95rem', marginTop: '4px', fontWeight: 600 }}>{t("rejected_orders_for_edit")}</div>
               </div>
             </div>
 
@@ -92,7 +95,7 @@ export function DashboardContent() {
               </div>
               <div>
                 <div className="font-mono" style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--success)', lineHeight: 1 }}>{metrics.completed_today}</div>
-                <div style={{ color: 'var(--success)', fontSize: '0.95rem', marginTop: '4px', fontWeight: 600 }}>طلبات أنجزت اليوم</div>
+                <div style={{ color: 'var(--success)', fontSize: '0.95rem', marginTop: '4px', fontWeight: 600 }}>{t("orders_completed_today")}</div>
               </div>
             </div>
           </div>
@@ -104,16 +107,16 @@ export function DashboardContent() {
             {/* Charts */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div className="auth-card" style={{ maxWidth: '100%', height: '350px', display: 'flex', flexDirection: 'column' }}>
-                <h2 style={{ fontSize: '1.1rem', marginBottom: '16px', fontWeight: 700 }}>الطلبات في كل مرحلة (قيد التنفيذ)</h2>
+                <h2 style={{ fontSize: '1.1rem', marginBottom: '16px', fontWeight: 700 }}>{t("orders_per_stage_wip")}</h2>
                 <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {charts.ordersByStage.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>لا توجد طلبات قيد التنفيذ</div>
+                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>{t("no_orders_in_progress")}</div>
                   ) : (
                     charts.ordersByStage.map((s: any) => (
                       <div key={s.name}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '6px', fontWeight: 600 }}>
                           <span>{s.name}</span>
-                          <span className="font-mono" style={{ color: 'var(--primary)', fontWeight: 800 }}>{s.count} <span style={{fontFamily:'var(--font-body)'}}>طلب</span></span>
+                          <span className="font-mono" style={{ color: 'var(--primary)', fontWeight: 800 }}>{s.count} <span style={{fontFamily:'var(--font-body)'}}>{t("request")}</span></span>
                         </div>
                         <div style={{ width: '100%', height: '10px', background: 'var(--bg-page)', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
                           <div style={{ 
@@ -132,7 +135,7 @@ export function DashboardContent() {
 
             {/* Live Activity Feed */}
             <div className="auth-card" style={{ maxWidth: '100%', display: 'flex', flexDirection: 'column' }}>
-              <h2 style={{ fontSize: '1.1rem', marginBottom: '16px', fontWeight: 700 }}>سجل الحركة المباشر</h2>
+              <h2 style={{ fontSize: '1.1rem', marginBottom: '16px', fontWeight: 700 }}>{t("live_timeline")}</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, overflowY: 'auto' }}>
                 {activityFeed.map((a: any) => (
                   <div key={a.id} style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>
@@ -141,10 +144,10 @@ export function DashboardContent() {
                       <span className="font-mono" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{new Date(a.created_at).toLocaleTimeString('ar-SA')}</span>
                     </div>
                     <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
-                      {a.action === 'handed_off' && <span style={{ color: 'var(--success)' }}>استلم <strong>{a.assigned_to?.full_name}</strong> في مرحلة {a.stage?.name}</span>}
-                      {a.action === 'completed' && <span style={{ color: 'var(--success)' }}>أنجز <strong>{a.actor.full_name}</strong> الطلب</span>}
-                      {a.action === 'returned' && <span style={{ color: 'var(--danger)' }}>رفض <strong>{a.actor.full_name}</strong> إلى {a.assigned_to?.full_name}</span>}
-                      {a.action === 'canceled' && <span style={{ color: 'var(--danger)' }}>ألغى <strong>{a.actor.full_name}</strong> الطلب</span>}
+                      {a.action === 'handed_off' && <span style={{ color: 'var(--success)' }}>{t("receive")} <strong>{a.assigned_to?.full_name}</strong> في مرحلة {a.stage?.name}</span>}
+                      {a.action === 'completed' && <span style={{ color: 'var(--success)' }}>أنجز <strong>{a.actor.full_name}</strong> {t("order")}</span>}
+                      {a.action === 'returned' && <span style={{ color: 'var(--danger)' }}>{t("reject")} <strong>{a.actor.full_name}</strong> إلى {a.assigned_to?.full_name}</span>}
+                      {a.action === 'canceled' && <span style={{ color: 'var(--danger)' }}>ألغى <strong>{a.actor.full_name}</strong> {t("order")}</span>}
                     </div>
                   </div>
                 ))}
@@ -192,8 +195,8 @@ export function DashboardContent() {
             <div style={{ display: 'inline-flex', padding: '16px', background: 'var(--bg-page)', borderRadius: '50%', marginBottom: '16px' }}>
               <CheckCircle size={32} color="var(--success)" />
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>لا يوجد مهام موكلة إليك حالياً</h3>
-            <p style={{ marginTop: '4px' }}>عمل رائع! صندوق المهام فارغ.</p>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>{t("no_tasks_assigned_now")}</h3>
+            <p style={{ marginTop: '4px' }}>{t("great_job_empty")}</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -219,7 +222,7 @@ function OrderRow({ task }: { task: any }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div className="font-mono" style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '1.1rem' }}>
             {task.invoice_number}
-            {task.priority === 'rush' && <span title="مستعجل" style={{ marginLeft: '4px' }}>🔥</span>}
+            {task.priority === 'rush' && <span title={t("urgent")} style={{ marginLeft: '4px' }}>🔥</span>}
           </div>
           <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{task.customer_name} — <span style={{ color: 'var(--text-secondary)' }}>{task.category?.name}</span></div>
           {task.current_stage && (
@@ -235,7 +238,7 @@ function OrderRow({ task }: { task: any }) {
               <span className="font-mono" style={{ fontSize: '0.85rem', fontWeight: 700, color: isOverdue ? 'var(--danger)' : 'var(--text-secondary)' }} dir="ltr">
                 {elapsedHours} / {estimatedHours} hr
               </span>
-              {isOverdue && <span style={{ fontSize: '0.75rem', color: 'white', background: 'var(--danger)', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }} className="animate-pulse">متأخر</span>}
+              {isOverdue && <span style={{ fontSize: '0.75rem', color: 'white', background: 'var(--danger)', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }} className="animate-pulse">{t("late")}</span>}
             </div>
           )}
           {task.status === 'returned' && (

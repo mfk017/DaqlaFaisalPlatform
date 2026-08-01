@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n";
 import { requireApproved } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { calculateEmployeeMetrics, formatDuration } from "@/lib/timeTracking";
@@ -6,6 +7,8 @@ import Link from "next/link";
 import { Activity, Clock, AlertTriangle, CheckCircle, Search } from "lucide-react";
 
 export default async function WorkloadPage() {
+  const t = await getT();
+
   const session = await requireApproved();
   const isAdmin = session.roles.includes("admin");
   const isSupervisor = session.roles.includes("supervisor");
@@ -45,7 +48,7 @@ export default async function WorkloadPage() {
     return {
       id: p.id,
       name: p.full_name,
-      roles: p.roles.map(r => `${r.role === 'worker' ? `عامل (${r.specialty})` : r.role === 'quality' ? 'جودة' : r.role === 'reception' ? 'استقبال' : r.role === 'supervisor' ? 'مشرف' : 'مدير'}`),
+      roles: p.roles.map(r => `${r.role === 'worker' ? `عامل (${r.specialty})` : r.role === 'quality' ? t("quality") : r.role === 'reception' ? t("reception") : r.role === 'supervisor' ? t("supervisor") : t("admin")}`),
       activeOrders,
       urgentOrders,
       completedTasks: metrics.completedTasksCount,
@@ -67,13 +70,13 @@ export default async function WorkloadPage() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>الموظف</th>
-              <th>الدور / التخصص</th>
-              <th>الطلبات الحالية</th>
-              <th>طلبات مستعجلة</th>
-              <th>متوسط وقت الإنجاز</th>
-              <th>المهام المنجزة</th>
-              <th>إجراءات</th>
+              <th>{t("employee")}</th>
+              <th>{t("role_specialty")}</th>
+              <th>{t("current_orders")}</th>
+              <th>{t("urgent_orders")}</th>
+              <th>{t("avg_completion_time")}</th>
+              <th>{t("completed_tasks")}</th>
+              <th>{t("actions")}</th>
             </tr>
           </thead>
           <tbody>

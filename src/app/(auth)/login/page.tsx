@@ -1,8 +1,8 @@
 import { LoginForm } from "@/components/auth/LoginForm";
 import { getT } from "@/lib/i18n";
 
-export default function LoginPage() {
-  const t = getT("ar");
+export default async function LoginPage() {
+  const t = await getT();
   
   return (
     <div className="auth-card">

@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 import { useEffect, useState } from "react";
 import { Loader2, TrendingUp, AlertTriangle, Activity, CheckCircle, Package, Clock, Download, Calendar } from "lucide-react";
@@ -9,6 +10,8 @@ import {
 } from 'recharts';
 
 export function ReportsDashboard() {
+  const { t } = useTranslation();
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -65,7 +68,7 @@ export function ReportsDashboard() {
   };
 
   if (loading && !data) return <div style={{ display: 'flex', justifyContent: 'center', padding: '64px', color: 'var(--text-secondary)' }}><Loader2 className="animate-spin" size={40} /></div>;
-  if (!data || !data.charts) return <div>خطأ في تحميل بيانات التقارير</div>;
+  if (!data || !data.charts) return <div>{t("error_loading_reports")}</div>;
 
   const { headline, charts } = data;
 
@@ -75,8 +78,8 @@ export function ReportsDashboard() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>التقارير التحليلية</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>نظرة شاملة على أداء خط الإنتاج، وتتبع الاختناقات، ومعدلات الإنجاز والجودة.</p>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>{t("analytical_reports")}</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>{t("production_line_overview")}</p>
         </div>
         
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--bg-page)', padding: '16px', borderRadius: 'var(--radius)', border: '1px solid var(--border-light)' }}>
@@ -92,7 +95,7 @@ export function ReportsDashboard() {
         </div>
       </div>
 
-      {loading && <div style={{ textAlign: 'center', color: 'var(--primary)' }}><Loader2 className="animate-spin" size={24} style={{ display: 'inline' }}/> تحديث البيانات...</div>}
+      {loading && <div style={{ textAlign: 'center', color: 'var(--primary)' }}><Loader2 className="animate-spin" size={24} style={{ display: 'inline' }}/> {t("updating_data")}</div>}
 
       {/* Headline Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
@@ -100,7 +103,7 @@ export function ReportsDashboard() {
         <div className="auth-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--primary)' }}>
             <Activity size={20} />
-            <span style={{ fontWeight: 600 }}>الطلبات النشطة (قيد التنفيذ)</span>
+            <span style={{ fontWeight: 600 }}>{t("active_orders_wip")}</span>
           </div>
           <div className="font-mono" style={{ fontSize: '2.5rem', fontWeight: 800 }}>{headline.activeOrders}</div>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>من أصل {headline.totalOrders} ضمن الفترة</div>
@@ -109,7 +112,7 @@ export function ReportsDashboard() {
         <div className="auth-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', borderColor: headline.lateOrderPercentage > 15 ? 'var(--danger-bg)' : 'transparent' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: headline.lateOrderPercentage > 15 ? 'var(--danger)' : 'var(--warning)' }}>
             <AlertTriangle size={20} />
-            <span style={{ fontWeight: 600 }}>نسبة الطلبات المتأخرة</span>
+            <span style={{ fontWeight: 600 }}>{t("late_orders_percentage")}</span>
           </div>
           <div className="font-mono" style={{ fontSize: '2.5rem', fontWeight: 800, color: headline.lateOrderPercentage > 15 ? 'var(--danger)' : 'var(--text-primary)' }}>{headline.lateOrderPercentage}%</div>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>بمتوسط تأخير {headline.avgDelayHours} ساعة</div>
@@ -118,7 +121,7 @@ export function ReportsDashboard() {
         <div className="auth-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--success)' }}>
             <CheckCircle size={20} />
-            <span style={{ fontWeight: 600 }}>نسبة النجاح من أول مرة (FPY)</span>
+            <span style={{ fontWeight: 600 }}>{t("fpy")}</span>
           </div>
           <div className="font-mono" style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--success)' }}>{headline.firstPassYield}%</div>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>طلبات منجزة دون رفض ({headline.completedWithinRange} طلب كلي)</div>
@@ -127,19 +130,19 @@ export function ReportsDashboard() {
         <div className="auth-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--danger)' }}>
             <AlertTriangle size={20} />
-            <span style={{ fontWeight: 600 }}>معدل المرفوضات (Defect Rate)</span>
+            <span style={{ fontWeight: 600 }}>{t("defect_rate")}</span>
           </div>
           <div className="font-mono" style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--danger)' }}>{headline.defectRate}%</div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>من إجمالي الطلبات تم رفضها مرة واحدة</div>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{t("total_orders_rejected_once")}</div>
         </div>
 
         <div className="auth-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-primary)' }}>
             <Clock size={20} />
-            <span style={{ fontWeight: 600 }}>متوسط وقت الإنجاز</span>
+            <span style={{ fontWeight: 600 }}>{t("avg_completion_time")}</span>
           </div>
-          <div className="font-mono" style={{ fontSize: '2.5rem', fontWeight: 800 }}>{headline.avgCycleTimeHours} <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>ساعة</span></div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>من الإنشاء إلى التسليم النهائي</div>
+          <div className="font-mono" style={{ fontSize: '2.5rem', fontWeight: 800 }}>{headline.avgCycleTimeHours} <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>{t("hour")}</span></div>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{t("from_creation_to_delivery")}</div>
         </div>
 
       </div>
@@ -150,16 +153,16 @@ export function ReportsDashboard() {
         {/* 1. WIP by Stage */}
         <div className="auth-card" style={{ maxWidth: '100%', height: '400px', display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>1. اختناقات الإنتاج (WIP BY STAGE)</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>عدد الطلبات المتراكمة في كل مرحلة حالياً.</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>{t("orders_accumulated_stage")}</p>
           <div style={{ flex: 1, overflowY: 'auto', paddingRight: '8px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {charts.wipByStage.length === 0 ? (
-              <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>لا يوجد طلبات قيد التنفيذ حالياً.</div>
+              <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>{t("no_orders_in_progress_now")}</div>
             ) : (
               charts.wipByStage.map((s: any) => (
                 <div key={s.name}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', marginBottom: '8px', fontWeight: 600 }}>
                     <span>{s.name}</span>
-                    <span className="font-mono" style={{ color: 'var(--primary)', fontWeight: 800 }}>{s.count} <span style={{ fontFamily: 'var(--font-body)' }}>طلب</span></span>
+                    <span className="font-mono" style={{ color: 'var(--primary)', fontWeight: 800 }}>{s.count} <span style={{ fontFamily: 'var(--font-body)' }}>{t("request")}</span></span>
                   </div>
                   <div style={{ width: '100%', height: '12px', background: 'var(--bg-page)', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
                     <div style={{ 
@@ -199,7 +202,7 @@ export function ReportsDashboard() {
         {/* 4. Defect Rates by Stage */}
         <div className="auth-card" style={{ maxWidth: '100%', height: '350px', display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>3. مصدر المرفوضات (DEFECT ORIGIN)</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>توضح من أي مرحلة يتم رفض الطلبات في الغالب ضمن الفترة.</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>{t("shows_stage_rejection")}</p>
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={charts.defectOrigin} layout="vertical" margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
@@ -216,17 +219,17 @@ export function ReportsDashboard() {
         {/* 5. Worker Performance Leaderboard */}
         <div className="auth-card" style={{ maxWidth: '100%', height: '350px', display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>4. أداء الموظفين (العمال)</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>المهام المنجزة للموظفين (لا يتأثر بنطاق التاريخ، سجل كامل).</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>{t("employee_completed_tasks")}</p>
           
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {charts.workerPerformance?.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-secondary)' }}>لا يوجد بيانات للعمال.</div>
+              <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-secondary)' }}>{t("no_workers_data")}</div>
             ) : (
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>اسم العامل</th>
-                    <th style={{ textAlign: 'center' }}>المهام المنجزة</th>
+                    <th>{t("worker_name")}</th>
+                    <th style={{ textAlign: 'center' }}>{t("completed_tasks")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -246,8 +249,8 @@ export function ReportsDashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
         {/* Average Time Per Stage */}
         <div className="auth-card" style={{ maxWidth: '100%', height: '350px', display: 'flex', flexDirection: 'column' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>متوسط وقت الإنجاز لكل مرحلة</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>يساعد في تحديد أبطأ الأقسام أو المراحل في المصنع.</p>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>{t("avg_completion_time_stage")}</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>{t("helps_identify_slowest")}</p>
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={charts.stageDurations} layout="vertical" margin={{ top: 0, right: 10, left: 20, bottom: 0 }}>
@@ -263,7 +266,7 @@ export function ReportsDashboard() {
 
         {/* Daily Trend */}
         <div className="auth-card" style={{ maxWidth: '100%', height: '350px', display: 'flex', flexDirection: 'column' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>معدل استلام الطلبات اليومي (Trend)</h2>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>{t("daily_intake_rate")}</h2>
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={charts.ordersPerDay} margin={{ top: 20, right: 30, left: -20, bottom: 5 }}>
@@ -282,7 +285,7 @@ export function ReportsDashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
         {/* 6. Volume & Cycle by Category */}
         <div className="auth-card" style={{ maxWidth: '100%', height: '350px', display: 'flex', flexDirection: 'column' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>حجم العمل ووقت الإنجاز حسب التصنيف</h2>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>{t("workload_by_category")}</h2>
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={charts.volumeByCategory} margin={{ top: 0, right: 10, left: -20, bottom: 20 }}>
@@ -301,7 +304,7 @@ export function ReportsDashboard() {
 
         {/* 6. Volume & Cycle by Branch */}
         <div className="auth-card" style={{ maxWidth: '100%', height: '350px', display: 'flex', flexDirection: 'column' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>حجم العمل ووقت الإنجاز حسب الفرع</h2>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>{t("workload_by_branch")}</h2>
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={charts.volumeByBranch} margin={{ top: 0, right: 10, left: -20, bottom: 20 }}>

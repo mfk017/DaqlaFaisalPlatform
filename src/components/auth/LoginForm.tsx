@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getT } from "@/lib/i18n";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -11,7 +11,7 @@ export function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const t = getT("ar");
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

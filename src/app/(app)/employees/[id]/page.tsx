@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n";
 import { requireApproved } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { calculateEmployeeMetrics, formatDuration } from "@/lib/timeTracking";
@@ -6,6 +7,8 @@ import Link from "next/link";
 import { ArrowRight, Activity, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 
 export default async function EmployeeDashboardPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = await getT();
+
   const session = await requireApproved();
   const isAdmin = session.roles.includes("admin");
   const isSupervisor = session.roles.includes("supervisor");
@@ -82,7 +85,7 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
         {profile.roles.map((r, i) => (
           <span key={i} className="badge" style={{ background: 'var(--primary-light)', color: 'var(--primary)', fontSize: '1rem', padding: '6px 12px' }}>
-            {r.role === 'worker' ? `عامل (${r.specialty})` : r.role === 'quality' ? 'جودة' : r.role === 'reception' ? 'استقبال' : r.role === 'supervisor' ? 'مشرف' : 'مدير'}
+            {r.role === 'worker' ? `عامل (${r.specialty})` : r.role === 'quality' ? t("quality") : r.role === 'reception' ? t("reception") : r.role === 'supervisor' ? t("supervisor") : t("admin")}
           </span>
         ))}
       </div>
@@ -95,7 +98,7 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
           </div>
           <div>
             <div className="font-mono" style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{profile.current_orders.length}</div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px', fontWeight: 600 }}>طلبات حالية بالانتظار</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px', fontWeight: 600 }}>{t("current_pending_orders")}</div>
           </div>
         </div>
 
@@ -107,7 +110,7 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
             <div className="font-mono" style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--success)', lineHeight: 1 }}>
               {completedToday} <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>/ {completedThisMonth} هذا الشهر</span>
             </div>
-            <div style={{ color: 'var(--success)', fontSize: '0.9rem', marginTop: '4px', fontWeight: 600 }}>المهام المنجزة (اليوم)</div>
+            <div style={{ color: 'var(--success)', fontSize: '0.9rem', marginTop: '4px', fontWeight: 600 }}>{t("completed_tasks_today")}</div>
           </div>
         </div>
 
@@ -117,7 +120,7 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
           </div>
           <div>
             <div className="font-mono" style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--warning)', lineHeight: 1 }}>{formatDuration(metrics.avgCompletionTimeMs)}</div>
-            <div style={{ color: 'var(--warning)', fontSize: '0.9rem', marginTop: '8px', fontWeight: 600 }}>متوسط وقت الإنجاز</div>
+            <div style={{ color: 'var(--warning)', fontSize: '0.9rem', marginTop: '8px', fontWeight: 600 }}>{t("avg_completion_time")}</div>
           </div>
         </div>
 
@@ -129,16 +132,16 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
             <div className="font-mono" style={{ fontSize: '2rem', fontWeight: 800, color: qcPassRate >= 80 ? 'var(--success)' : 'var(--danger)', lineHeight: 1 }}>
               {qcPassRate}%
             </div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px', fontWeight: 600 }}>نسبة النجاح من أول مرة</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px', fontWeight: 600 }}>{t("first_time_success_rate")}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--danger)', marginTop: '2px' }}>أعيد للعمل {metrics.reworkCount} مرة</div>
           </div>
         </div>
       </div>
 
       <div className="auth-card" style={{ maxWidth: '100%' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '20px' }}>الطلبات الحالية المكلف بها</h2>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '20px' }}>{t("assigned_current_orders")}</h2>
         {profile.current_orders.length === 0 ? (
-          <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '24px' }}>لا توجد طلبات مكلف بها حالياً.</div>
+          <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '24px' }}>{t("no_assigned_orders_now")}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {profile.current_orders.map(order => (
@@ -147,7 +150,7 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
                   <div>
                     <div className="font-mono" style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '1.1rem' }}>
                       {order.invoice_number}
-                      {order.priority === 'rush' && <span title="مستعجل" style={{ marginLeft: '4px' }}>🔥</span>}
+                      {order.priority === 'rush' && <span title={t("urgent")} style={{ marginLeft: '4px' }}>🔥</span>}
                     </div>
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
                       المرحلة: <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{order.current_stage.name}</span>
@@ -155,7 +158,7 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
                   </div>
                   <div>
                     <span className={`badge ${order.status === 'returned' ? 'animate-pulse' : ''}`} style={{ background: order.status === 'returned' ? 'var(--danger-bg)' : 'var(--primary-light)', color: order.status === 'returned' ? 'var(--danger)' : 'var(--primary)' }}>
-                      {order.status === 'returned' ? 'مرفوض للتعديل' : 'قيد التنفيذ'}
+                      {order.status === 'returned' ? t("rejected_for_edit") : 'قيد التنفيذ'}
                     </span>
                   </div>
                 </div>

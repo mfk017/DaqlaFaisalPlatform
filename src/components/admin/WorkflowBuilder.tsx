@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 import { useEffect, useState } from "react";
 import { Trash2, Plus, ArrowUp, ArrowDown, Shield, Box } from "lucide-react";
@@ -21,6 +22,8 @@ type Category = {
 };
 
 export function WorkflowBuilder({ categoryId }: { categoryId: string }) {
+  const { t } = useTranslation();
+
   const [category, setCategory] = useState<Category | null>(null);
   const [specialties, setSpecialties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,8 +131,8 @@ export function WorkflowBuilder({ categoryId }: { categoryId: string }) {
     fetchData(); // re-fetch to ensure sync and active status update
   };
 
-  if (loading) return <div>جاري التحميل...</div>;
-  if (!category) return <div>لم يتم العثور على التصنيف</div>;
+  if (loading) return <div>{t("loading")}</div>;
+  if (!category) return <div>{t("category_not_found")}</div>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -137,16 +140,16 @@ export function WorkflowBuilder({ categoryId }: { categoryId: string }) {
       {/* Status Card */}
       <div className="auth-card" style={{ maxWidth: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h2 style={{ fontSize: '1.1rem', marginBottom: '8px' }}>حالة المسار</h2>
+          <h2 style={{ fontSize: '1.1rem', marginBottom: '8px' }}>{t("workflow_status")}</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             يجب أن يحتوي المسار على الأقل على مرحلة جودة واحدة ومرحلة تسليم نهائية واحدة ليتم تفعيله.
           </p>
         </div>
         <div>
           {category.is_active ? (
-            <span className="badge approved" style={{ fontSize: '1rem', padding: '8px 16px' }}>نشط ومفعل</span>
+            <span className="badge approved" style={{ fontSize: '1rem', padding: '8px 16px' }}>{t("active_and_enabled")}</span>
           ) : (
-            <span className="badge pending" style={{ fontSize: '1rem', padding: '8px 16px' }}>غير مكتمل</span>
+            <span className="badge pending" style={{ fontSize: '1rem', padding: '8px 16px' }}>{t("incomplete")}</span>
           )}
         </div>
       </div>
@@ -243,23 +246,23 @@ export function WorkflowBuilder({ categoryId }: { categoryId: string }) {
           
           <form onSubmit={handleAdd}>
             <div className="form-group">
-              <label className="form-label">اسم المرحلة (مثال: القص، الخياطة)</label>
+              <label className="form-label">{t("stage_name_example")}</label>
               <input type="text" className="form-input" value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
 
             <div className="form-group">
-              <label className="form-label">الدور المطلوب للاستلام</label>
+              <label className="form-label">{t("required_role_receive")}</label>
               <select className="form-input" value={role} onChange={(e) => { setRole(e.target.value); setSpecialty(""); }}>
-                <option value="worker">عامل (Worker)</option>
-                <option value="quality">مراقب جودة (Quality)</option>
-                <option value="reception">استقبال (Reception)</option>
-                <option value="admin">مدير (Admin)</option>
+                <option value="worker">{t("worker_role")}</option>
+                <option value="quality">{t("quality_inspector")}</option>
+                <option value="reception">{t("reception_role")}</option>
+                <option value="admin">{t("admin_role")}</option>
               </select>
             </div>
 
             {role === 'worker' && (
               <div className="form-group">
-                <label className="form-label">التخصص المطلوب (اختياري)</label>
+                <label className="form-label">{t("required_specialty_optional")}</label>
                 <select className="form-input" value={specialty} onChange={(e) => setSpecialty(e.target.value)}>
                   <option value="">أي تخصص</option>
                   {specialties.map(s => (
@@ -270,18 +273,18 @@ export function WorkflowBuilder({ categoryId }: { categoryId: string }) {
             )}
 
             <div className="form-group">
-              <label className="form-label">الوقت المتوقع للإنجاز (بالساعات)</label>
+              <label className="form-label">{t("expected_time_hours")}</label>
               <input type="number" className="form-input" value={estimatedHours} onChange={(e) => setEstimatedHours(parseInt(e.target.value) || 24)} min="1" required />
             </div>
 
             <div className="form-group" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '16px' }}>
               <input type="checkbox" id="isQ" checked={isQuality} onChange={(e) => setIsQuality(e.target.checked)} style={{ width: '18px', height: '18px' }} />
-              <label htmlFor="isQ" style={{ fontWeight: 600, color: 'var(--danger)' }}>هذه المرحلة للرقابة والجودة</label>
+              <label htmlFor="isQ" style={{ fontWeight: 600, color: 'var(--danger)' }}>{t("stage_is_for_quality")}</label>
             </div>
 
             <div className="form-group" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <input type="checkbox" id="isF" checked={isFinal} onChange={(e) => setIsFinal(e.target.checked)} style={{ width: '18px', height: '18px' }} />
-              <label htmlFor="isF" style={{ fontWeight: 600, color: 'var(--success)' }}>هذه هي المرحلة النهائية (تسليم للفرع)</label>
+              <label htmlFor="isF" style={{ fontWeight: 600, color: 'var(--success)' }}>{t("stage_is_final")}</label>
             </div>
 
             <button type="submit" className="btn" disabled={isSubmitting} style={{ marginTop: '16px' }}>

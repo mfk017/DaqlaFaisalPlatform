@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -20,6 +21,8 @@ type Order = {
 };
 
 export function OrderList({ canCreate, isWorker }: { canCreate: boolean, isWorker?: boolean }) {
+  const { t } = useTranslation();
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState('mine');
   const [search, setSearch] = useState('');
@@ -49,7 +52,7 @@ export function OrderList({ canCreate, isWorker }: { canCreate: boolean, isWorke
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>الطلبات</h1>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>{t("orders")}</h1>
         {canCreate && (
           <Link href="/orders/new" className="btn" style={{ width: 'auto', textDecoration: 'none' }}>
             <Plus size={16} /> طلب جديد
@@ -107,9 +110,9 @@ export function OrderList({ canCreate, isWorker }: { canCreate: boolean, isWorke
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
         >
-          <option value="all">كل الأولويات</option>
-          <option value="rush">🔥 مستعجل</option>
-          <option value="normal">عادي</option>
+          <option value="all">{t("all_priorities")}</option>
+          <option value="rush">{t("urgent_fire")}</option>
+          <option value="normal">{t("ordinary")}</option>
         </select>
       </div>
 
@@ -123,14 +126,14 @@ export function OrderList({ canCreate, isWorker }: { canCreate: boolean, isWorke
         <table className="data-table">
           <thead>
             <tr>
-              <th>رقم الفاتورة</th>
-              <th>العميل</th>
-              <th>التصنيف</th>
-              <th>المرحلة الحالية</th>
-              <th>الموظف المسؤول</th>
-              <th>تاريخ الطلب</th>
-              <th>الوقت المستغرق</th>
-              <th style={{ width: '100px' }}>الحالة</th>
+              <th>{t("invoice_number")}</th>
+              <th>{t("customer")}</th>
+              <th>{t("category")}</th>
+              <th>{t("current_stage")}</th>
+              <th>{t("responsible_employee")}</th>
+              <th>{t("order_date")}</th>
+              <th>{t("time_taken")}</th>
+              <th style={{ width: '100px' }}>{t("status")}</th>
             </tr>
           </thead>
           <tbody>
@@ -156,29 +159,29 @@ export function OrderList({ canCreate, isWorker }: { canCreate: boolean, isWorke
                     {o.due_date && (
                       <div style={{ color: globalDueOverdue ? 'var(--danger)' : 'var(--primary)', fontWeight: 600, marginTop: '4px' }}>
                         تسليم: {new Date(o.due_date).toLocaleDateString('ar-SA')}
-                        {globalDueOverdue && <span className="animate-pulse" style={{ display: 'block', fontSize: '0.75rem', fontFamily: 'var(--font-body)' }}>فات الموعد!</span>}
+                        {globalDueOverdue && <span className="animate-pulse" style={{ display: 'block', fontSize: '0.75rem', fontFamily: 'var(--font-body)' }}>{t("overdue")}</span>}
                       </div>
                     )}
                   </td>
                   <td>
                     {o.status === 'completed' ? (
-                      <span style={{ color: 'var(--success)', fontWeight: 600 }}>منجز</span>
+                      <span style={{ color: 'var(--success)', fontWeight: 600 }}>{t("completed")}</span>
                     ) : o.status === 'canceled' ? (
-                      <span style={{ color: 'var(--danger)', fontWeight: 600 }}>ملغي</span>
+                      <span style={{ color: 'var(--danger)', fontWeight: 600 }}>{t("cancelled")}</span>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <span className="font-mono" style={{ fontWeight: 600, color: isOverdue ? 'var(--danger)' : 'var(--text-primary)' }} dir="ltr">
                           {elapsedHours} / {estimatedHours} hr
                         </span>
-                        {isOverdue && <span style={{ fontSize: '0.75rem', color: 'var(--danger)', fontWeight: 700 }} className="animate-pulse">متأخر!</span>}
+                        {isOverdue && <span style={{ fontSize: '0.75rem', color: 'var(--danger)', fontWeight: 700 }} className="animate-pulse">{t("late_exclamation")}</span>}
                       </div>
                     )}
                   </td>
                   <td>
-                    {o.status === 'in_progress' && <span className="badge pending"><Clock size={12} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> جاري</span>}
-                    {o.status === 'returned' && <span className="badge animate-pulse" style={{ background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid var(--danger)' }}><AlertTriangle size={12} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> معاد للتعديل</span>}
-                    {o.status === 'completed' && <span className="badge approved"><CheckCircle size={12} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> منجز</span>}
-                    {o.status === 'canceled' && <span className="badge"><AlertTriangle size={12} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> ملغي</span>}
+                    {o.status === 'in_progress' && <span className="badge pending"><Clock size={12} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {t("in_progress")}</span>}
+                    {o.status === 'returned' && <span className="badge animate-pulse" style={{ background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid var(--danger)' }}><AlertTriangle size={12} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {t("returned_for_edit")}</span>}
+                    {o.status === 'completed' && <span className="badge approved"><CheckCircle size={12} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {t("completed")}</span>}
+                    {o.status === 'canceled' && <span className="badge"><AlertTriangle size={12} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {t("cancelled")}</span>}
                   </td>
                 </tr>
               );

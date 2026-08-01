@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Trash2, Plus } from "lucide-react";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 type Branch = {
   id: string;
@@ -14,6 +15,7 @@ export function BranchManagement() {
   const [loading, setLoading] = useState(true);
   const [newBranchName, setNewBranchName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   const fetchBranches = async () => {
     const res = await fetch("/api/admin/branches");
@@ -54,7 +56,7 @@ export function BranchManagement() {
     fetchBranches();
   };
 
-  if (loading) return <div>جاري التحميل...</div>;
+  if (loading) return <div>{t("loading")}</div>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '600px' }}>
@@ -62,27 +64,27 @@ export function BranchManagement() {
         <input
           type="text"
           className="form-input"
-          placeholder="اسم الفرع الجديد..."
+          placeholder={t("new_branch_name")}
           value={newBranchName}
           onChange={(e) => setNewBranchName(e.target.value)}
           required
         />
         <button type="submit" className="btn" disabled={isSubmitting} style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-          <Plus size={16} /> إضافة فرع
+          <Plus size={16} /> {t("add_branch")}
         </button>
       </form>
 
       {branches.length === 0 ? (
         <div className="auth-card" style={{ maxWidth: '100%', textAlign: 'center', color: 'var(--text-secondary)' }}>
-          لا يوجد فروع حالياً
+          {t("no_branches_now")}
         </div>
       ) : (
         <table className="data-table">
           <thead>
             <tr>
-              <th>الفرع</th>
-              <th style={{ width: '120px' }}>الحالة</th>
-              <th style={{ width: '120px' }}>إجراءات</th>
+              <th>{t("branch")}</th>
+              <th style={{ width: '120px' }}>{t("status")}</th>
+              <th style={{ width: '120px' }}>{t("actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -91,7 +93,7 @@ export function BranchManagement() {
                 <td style={{ opacity: b.is_archived ? 0.5 : 1, textDecoration: b.is_archived ? 'line-through' : 'none' }}>{b.name}</td>
                 <td>
                   <span className="badge" style={{ background: b.is_archived ? 'var(--bg-card)' : 'var(--success-bg)', color: b.is_archived ? 'var(--text-secondary)' : 'var(--success)' }}>
-                    {b.is_archived ? 'مؤرشف' : 'نشط'}
+                    {b.is_archived ? t("archived") : t("active")}
                   </span>
                 </td>
                 <td>
@@ -100,7 +102,7 @@ export function BranchManagement() {
                     className="btn" 
                     style={{ padding: '6px 12px', width: 'auto', background: b.is_archived ? 'var(--primary)' : 'var(--danger-bg)', color: b.is_archived ? '#fff' : 'var(--danger)' }}
                   >
-                    {b.is_archived ? 'تنشيط' : 'أرشفة'}
+                    {b.is_archived ? t("activate") : t("archive")}
                   </button>
                 </td>
               </tr>

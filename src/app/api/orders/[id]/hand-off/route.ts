@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n";
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireApproved } from '@/lib/auth';
@@ -5,6 +6,8 @@ import { writeFile } from 'fs/promises';
 import path from 'path';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const t = await getT();
+
   try {
     const session = await requireApproved();
     const p = await params;
@@ -146,7 +149,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             stage_id: order.current_stage_id,
             actor_id: session.sub,
             action: 'added_note',
-            notes: notes || 'تمت إضافة ملاحظة / مرفق',
+            notes: notes || t("note_attached_added"),
             image_url
           }
         });

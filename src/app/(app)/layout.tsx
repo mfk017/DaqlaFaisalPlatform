@@ -4,6 +4,7 @@ import { getT } from "@/lib/i18n";
 import { db } from "@/lib/db";
 import { UserCircle, LogOut, Home, Users, Settings, BarChart2, Activity } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export default async function AppLayout({
   children,
@@ -11,7 +12,7 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const session = await requireApproved();
-  const t = getT("ar");
+  const t = await getT();
   const isAdmin = session.roles.includes("admin");
   const isSupervisor = session.roles.includes("supervisor");
   const isManagement = isAdmin || isSupervisor || session.roles.includes("reception");
@@ -20,12 +21,12 @@ export default async function AppLayout({
     where: { id: session.sub }
   });
 
-  let roleDisplay = "مستخدم";
-  if (isAdmin) roleDisplay = "مدير (Admin)";
-  else if (isSupervisor) roleDisplay = "مشرف (Supervisor)";
-  else if (session.roles.includes("worker")) roleDisplay = `عامل (${session.specialty || ''})`;
-  else if (session.roles.includes("quality")) roleDisplay = "مفتش جودة";
-  else if (session.roles.includes("reception")) roleDisplay = "استقبال";
+  let roleDisplay = t("user_role_user");
+  if (isAdmin) roleDisplay = t("user_role_admin");
+  else if (isSupervisor) roleDisplay = t("user_role_supervisor");
+  else if (session.roles.includes("worker")) roleDisplay = `${t("user_role_worker")} (${session.specialty || ''})`;
+  else if (session.roles.includes("quality")) roleDisplay = t("user_role_quality");
+  else if (session.roles.includes("reception")) roleDisplay = t("user_role_reception");
 
   return (
     <div className="app-shell">
@@ -47,15 +48,15 @@ export default async function AppLayout({
             <>
               <Link href="/workload" className="nav-link">
                 <Users size={20} />
-                أعباء العمل (Workload)
+                {t("workload")}
               </Link>
               <Link href="/reports" className="nav-link">
                 <BarChart2 size={20} />
-                التقارير
+                {t("reports")}
               </Link>
               <Link href="/live" className="nav-link" target="_blank">
                 <Activity size={20} />
-                شاشة الإنتاج (Live)
+                {t("live_board")}
               </Link>
             </>
           )}
@@ -76,7 +77,7 @@ export default async function AppLayout({
               </Link>
               <Link href="/admin/specialties" className="nav-link">
                 <Settings size={20} />
-                التخصصات والأدوار
+                {t("specialties_roles")}
               </Link>
             </>
           )}
@@ -87,6 +88,7 @@ export default async function AppLayout({
           <div></div> {/* empty div to push content to the left if needed, or leave it flex-end */}
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <LanguageSwitcher />
             <ThemeToggle />
             {/* Account Info */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '24px', borderRight: '1px solid var(--border-light)' }}>

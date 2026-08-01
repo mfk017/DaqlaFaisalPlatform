@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { requireApproved } from '@/lib/auth';
 
 export async function GET(req: Request) {
+  const t = await getT();
+
   try {
     const session = await requireApproved();
     if (!session.roles.includes('admin')) {
@@ -56,10 +58,10 @@ export async function GET(req: Request) {
       if(o.status === 'canceled') canc++;
     });
     const statusBreakdown = [
-      { name: 'جاري التنفيذ', value: inP, color: '#E8A33D' },
-      { name: 'مرفوض/معاد', value: ret, color: '#E85C4A' },
-      { name: 'منجز', value: comp, color: '#3FBF7F' },
-      { name: 'ملغي', value: canc, color: '#2A2E37' }
+      { name: t("executing"), value: inP, color: '#E8A33D' },
+      { name: t("rejected_returned"), value: ret, color: '#E85C4A' },
+      { name: t("completed"), value: comp, color: '#3FBF7F' },
+      { name: t("cancelled"), value: canc, color: '#2A2E37' }
     ];
 
     // 3. Defect Metrics & First-Pass Yield
@@ -162,7 +164,7 @@ export async function GET(req: Request) {
       return {
         id: p.id,
         name: p.full_name,
-        specialty: workerRole?.specialty || 'عام',
+        specialty: workerRole?.specialty || t("general"),
         completedTasks: p._count.history_actions
       };
     }).sort((a, b) => b.completedTasks - a.completedTasks);

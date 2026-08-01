@@ -1,3 +1,4 @@
+import { useTranslation } from "@/components/layout/I18nProvider";
 import React from 'react';
 
 type StageData = {
@@ -10,6 +11,8 @@ interface FactoryHeatMapProps {
 }
 
 export function FactoryHeatMap({ stages }: FactoryHeatMapProps) {
+  const { t } = useTranslation();
+
   // Threshold configuration (easy to adjust later)
   const THRESHOLDS = {
     WARNING: 5,   // 5 or more = Busy (Yellow)
@@ -29,15 +32,15 @@ export function FactoryHeatMap({ stages }: FactoryHeatMapProps) {
   };
 
   const getStatusText = (count: number) => {
-    if (count >= THRESHOLDS.CRITICAL) return 'مزدحم جداً';
-    if (count >= THRESHOLDS.WARNING) return 'مزدحم';
-    return 'طبيعي';
+    if (count >= THRESHOLDS.CRITICAL) return t("very_busy");
+    if (count >= THRESHOLDS.WARNING) return t("busy");
+    return t("normal");
   };
 
   return (
     <div className="auth-card" style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>الخريطة الحرارية للمصنع (Heat Map)</h2>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{t("factory_heatmap")}</h2>
         <div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem', fontWeight: 600 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--success)' }}></span> طبيعي

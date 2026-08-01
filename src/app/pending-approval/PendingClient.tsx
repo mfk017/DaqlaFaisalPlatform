@@ -1,8 +1,11 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 export default function PendingClient() {
+  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(false);
 
   const handleRefresh = async () => {
@@ -23,7 +26,7 @@ export default function PendingClient() {
   return (
     <div className="auth-container">
       <div className="auth-card" style={{ textAlign: 'center' }}>
-        <h1 className="auth-title">بانتظار الموافقة</h1>
+        <h1 className="auth-title">{t("pending_approval")}</h1>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
           حسابك بانتظار موافقة الإدارة. يرجى الانتظار أو التواصل مع المشرف.
         </p>

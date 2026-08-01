@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -6,6 +7,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export function OrderIntakeForm({ categories, branches }: { categories: any[], branches: any[] }) {
+  const { t } = useTranslation();
+
   const [customerName, setCustomerName] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [branchId, setBranchId] = useState("");
@@ -70,7 +73,7 @@ export function OrderIntakeForm({ categories, branches }: { categories: any[], b
         {error && <div className="error-message">{error}</div>}
         
         <div className="form-group">
-          <label className="form-label">اسم العميل</label>
+          <label className="form-label">{t("customer_name")}</label>
           <input
             type="text"
             className="form-input"
@@ -81,9 +84,9 @@ export function OrderIntakeForm({ categories, branches }: { categories: any[], b
         </div>
 
         <div className="form-group">
-          <label className="form-label">الفرع المطلوب التسليم إليه</label>
+          <label className="form-label">{t("delivery_branch")}</label>
           <select className="form-input" value={branchId} onChange={(e) => setBranchId(e.target.value)} required>
-            <option value="">اختر الفرع...</option>
+            <option value="">{t("select_branch")}</option>
             {branches.map(b => (
               <option key={b.id} value={b.id}>{b.name}</option>
             ))}
@@ -91,9 +94,9 @@ export function OrderIntakeForm({ categories, branches }: { categories: any[], b
         </div>
 
         <div className="form-group">
-          <label className="form-label">نوع المنتج (التصنيف)</label>
+          <label className="form-label">{t("product_type")}</label>
           <select className="form-input" value={categoryId} onChange={(e) => { setCategoryId(e.target.value); setAssigneeId(""); }} required>
-            <option value="">اختر التصنيف...</option>
+            <option value="">{t("select_category")}</option>
             {categories.map(c => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
@@ -109,7 +112,7 @@ export function OrderIntakeForm({ categories, branches }: { categories: any[], b
               يجب تحديد الموظف الذي سيبدأ العمل على هذا الطلب:
             </p>
             <select className="form-input" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} required>
-              <option value="">اختر الموظف...</option>
+              <option value="">{t("select_employee")}</option>
               {eligibleUsers.map(u => (
                 <option key={u.id} value={u.id}>{u.full_name}</option>
               ))}

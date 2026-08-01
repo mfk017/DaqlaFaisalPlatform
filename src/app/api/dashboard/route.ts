@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { requireApproved } from '@/lib/auth';
 
 export async function GET(req: Request) {
+  const t = await getT();
+
   try {
     const session = await requireApproved();
     const isAdmin = session.roles.includes('admin');
@@ -139,10 +141,10 @@ export async function GET(req: Request) {
         if(o.status === 'canceled') canc++;
       });
       responseData.charts.ordersByStatus = [
-        { name: 'جاري التنفيذ', value: inP, color: '#E8A33D' },
-        { name: 'مرفوض/معاد', value: ret, color: '#E85C4A' },
-        { name: 'منجز', value: comp, color: '#3FBF7F' },
-        { name: 'ملغي', value: canc, color: '#2A2E37' }
+        { name: t("executing"), value: inP, color: '#E8A33D' },
+        { name: t("rejected_returned"), value: ret, color: '#E85C4A' },
+        { name: t("completed"), value: comp, color: '#3FBF7F' },
+        { name: t("cancelled"), value: canc, color: '#2A2E37' }
       ];
     }
 

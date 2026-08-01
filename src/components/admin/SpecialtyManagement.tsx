@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 import { useEffect, useState } from "react";
 import { Trash2, Plus, Edit } from "lucide-react";
@@ -11,6 +12,8 @@ type Specialty = {
 };
 
 export function SpecialtyManagement() {
+  const { t } = useTranslation();
+
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -65,14 +68,14 @@ export function SpecialtyManagement() {
     fetchSpecialties();
   };
 
-  if (loading) return <div>جاري التحميل...</div>;
+  if (loading) return <div>{t("loading")}</div>;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '24px', alignItems: 'start' }}>
       
       {/* Specialties List */}
       <div>
-        <h3 style={{ marginBottom: '16px' }}>قائمة التخصصات والأدوار</h3>
+        <h3 style={{ marginBottom: '16px' }}>{t("specialties_roles_list")}</h3>
         {specialties.length === 0 ? (
           <div className="auth-card" style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
             لا يوجد تخصصات مضافة
@@ -81,10 +84,10 @@ export function SpecialtyManagement() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>المعرف (Name)</th>
-                <th>الاسم بالعربي (Label)</th>
-                <th>تاريخ الإضافة</th>
-                <th>إجراءات</th>
+                <th>{t("id_name")}</th>
+                <th>{t("name_arabic_label")}</th>
+                <th>{t("added_date")}</th>
+                <th>{t("actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -115,7 +118,7 @@ export function SpecialtyManagement() {
         <h3 style={{ marginBottom: '16px' }}>{editingId ? 'تعديل التخصص' : 'إضافة تخصص جديد'}</h3>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="form-group">
-            <label className="form-label">المعرف البرمجي (بالإنجليزي، بدون مسافات)</label>
+            <label className="form-label">{t("id_code")}</label>
             <input 
               type="text" 
               className="form-input font-mono" 
@@ -127,7 +130,7 @@ export function SpecialtyManagement() {
             />
           </div>
           <div className="form-group">
-            <label className="form-label">الاسم بالعربي (يظهر للمستخدمين)</label>
+            <label className="form-label">{t("name_arabic_display")}</label>
             <input 
               type="text" 
               className="form-input" 
@@ -140,7 +143,7 @@ export function SpecialtyManagement() {
           
           <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
             <button type="submit" className="btn" style={{ flex: 1 }}>
-              {editingId ? <><Edit size={16} /> حفظ التعديلات</> : <><Plus size={16} /> إضافة التخصص</>}
+              {editingId ? <><Edit size={16} /> {t("save_changes")}</> : <><Plus size={16} /> إضافة التخصص</>}
             </button>
             {editingId && (
               <button 

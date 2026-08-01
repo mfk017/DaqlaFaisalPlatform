@@ -1,8 +1,8 @@
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { getT } from "@/lib/i18n";
 
-export default function ForgotPasswordPage() {
-  const t = getT("ar");
+export default async function ForgotPasswordPage() {
+  const t = await getT();
   
   return (
     <div className="auth-card">

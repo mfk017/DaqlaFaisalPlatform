@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { getT } from "@/lib/i18n";
+import { useTranslation } from "@/components/layout/I18nProvider";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const t = getT("ar");
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

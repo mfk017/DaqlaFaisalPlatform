@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getT } from "@/lib/i18n";
+import { useTranslation } from "@/components/layout/I18nProvider";
 import Link from "next/link";
 
 export function ResetPasswordForm() {
@@ -15,10 +15,10 @@ export function ResetPasswordForm() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const t = getT("ar");
+  const { t } = useTranslation();
 
   if (!token || !id) {
-    return <div className="error-message">رابط الاستعادة غير صالح أو منتهي الصلاحية.</div>;
+    return <div className="error-message">{t("invalid_reset_link")}</div>;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,7 +63,7 @@ export function ResetPasswordForm() {
       {error && <div className="error-message">{error}</div>}
       
       <div className="form-group">
-        <label className="form-label">كلمة المرور الجديدة</label>
+        <label className="form-label">{t("new_password")}</label>
         <input
           type="password"
           className="form-input"
