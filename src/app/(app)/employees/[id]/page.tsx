@@ -20,7 +20,7 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
     where: { id: p.id },
     include: {
       roles: true,
-      assigned_orders: {
+      current_orders: {
         where: { status: { in: ['in_progress', 'returned'] } },
         include: {
           category: true,
@@ -94,7 +94,7 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
             <Activity size={28} />
           </div>
           <div>
-            <div className="font-mono" style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{profile.assigned_orders.length}</div>
+            <div className="font-mono" style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>{profile.current_orders.length}</div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px', fontWeight: 600 }}>طلبات حالية بالانتظار</div>
           </div>
         </div>
@@ -137,11 +137,11 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
 
       <div className="auth-card" style={{ maxWidth: '100%' }}>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '20px' }}>الطلبات الحالية المكلف بها</h2>
-        {profile.assigned_orders.length === 0 ? (
+        {profile.current_orders.length === 0 ? (
           <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '24px' }}>لا توجد طلبات مكلف بها حالياً.</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {profile.assigned_orders.map(order => (
+            {profile.current_orders.map(order => (
               <Link key={order.id} href={`/orders/${order.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-page)', borderRadius: 'var(--radius)', border: '1px solid var(--border-light)' }}>
                   <div>
