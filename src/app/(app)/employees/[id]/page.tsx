@@ -38,8 +38,13 @@ export default async function EmployeeDashboardPage({ params }: { params: Promis
     notFound();
   }
 
+  // Only fetch the last 30 days of history to prevent memory issues
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
   const historyForMetrics = await db.orderHistory.findMany({
     where: {
+      created_at: { gte: thirtyDaysAgo },
       OR: [
         { assigned_to_id: profile.id },
         { actor_id: profile.id }

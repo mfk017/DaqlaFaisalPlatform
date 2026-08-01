@@ -20,8 +20,8 @@ export function I18nProvider({
   dict: Dictionary; 
   children: ReactNode 
 }) {
-  const t = (key: keyof Dictionary) => {
-    return dict[key] || key;
+  const t = (key: any) => {
+    return dict[key as keyof Dictionary] || key;
   };
 
   return (

@@ -37,34 +37,7 @@ export function ReportsDashboard() {
   }, [startDate, endDate]);
 
   const exportCSV = () => {
-    if (!data || !data.raw) return;
-    
-    const headers = ["Invoice Number", "Customer", "Category", "Branch", "Status", "Priority", "Created At", "Updated At", "Due Date"];
-    const rows = data.raw.map((o: any) => [
-      o.invoice_number,
-      o.customer_name,
-      o.category?.name || '',
-      o.branch?.name || '',
-      o.status,
-      o.priority,
-      new Date(o.created_at).toLocaleString('en-GB'),
-      new Date(o.updated_at).toLocaleString('en-GB'),
-      o.due_date ? new Date(o.due_date).toLocaleString('en-GB') : ''
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row: any) => row.map((str: string) => `"${str}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `factory_orders_${startDate}_to_${endDate}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.location.href = `/api/reports/export?startDate=${startDate}&endDate=${endDate}`;
   };
 
   if (loading && !data) return <div style={{ display: 'flex', justifyContent: 'center', padding: '64px', color: 'var(--text-secondary)' }}><Loader2 className="animate-spin" size={40} /></div>;

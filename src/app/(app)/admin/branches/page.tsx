@@ -4,7 +4,7 @@ import { getT } from "@/lib/i18n";
 
 export default async function AdminBranchesPage() {
   await requireAdmin();
-  const t = getT("ar");
+  const t = await getT();
 
   return (
     <div>

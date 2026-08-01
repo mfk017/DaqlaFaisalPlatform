@@ -4,6 +4,7 @@ import { useTranslation } from "@/components/layout/I18nProvider";
 import { useEffect, useState } from "react";
 import { formatDuration } from "@/lib/timeTracking";
 import { Loader2, Activity, CheckCircle, AlertTriangle, Clock } from "lucide-react";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export function LiveBoardClient() {
   const { t } = useTranslation();
@@ -62,7 +63,10 @@ export function LiveBoardClient() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #333', paddingBottom: '20px' }}>
         <div>
           <h1 style={{ fontSize: '3.5rem', fontWeight: 900, color: 'var(--primary)', margin: 0, lineHeight: 1 }}>{t("live_production_board_2")}</h1>
-          <div style={{ fontSize: '1.5rem', color: '#aaa', marginTop: '8px' }}>{t("auto_refresh")}</div>
+          <div style={{ fontSize: '1.5rem', color: '#aaa', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span>{t("auto_refresh")}</span>
+            <LanguageSwitcher />
+          </div>
         </div>
         <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
           <div className="font-mono" style={{ fontSize: '4rem', fontWeight: 900, lineHeight: 1, letterSpacing: '2px' }}>

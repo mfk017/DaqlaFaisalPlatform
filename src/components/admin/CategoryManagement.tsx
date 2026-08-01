@@ -9,6 +9,7 @@ type Category = {
   id: string;
   name: string;
   is_active: boolean;
+  is_archived: boolean;
   _count: { stages: number };
 };
 

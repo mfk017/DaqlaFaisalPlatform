@@ -24,7 +24,7 @@ export async function getT() {
   const locale = await getLocale();
   const dict = dictionaries[locale] || dictionaries['ar'];
   
-  return (key: keyof Dictionary) => {
-    return dict[key] || ar[key] || key;
+  return (key: any) => {
+    return dict[key as keyof Dictionary] || ar[key as keyof Dictionary] || key;
   };
 }

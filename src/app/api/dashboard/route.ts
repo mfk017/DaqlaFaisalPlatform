@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireApproved } from '@/lib/auth';
+import { getT } from '@/lib/i18n';
 
 export async function GET(req: Request) {
   const t = await getT();
@@ -60,9 +61,17 @@ export async function GET(req: Request) {
       sevenDaysAgo.setDate(today.getDate() - 6);
       sevenDaysAgo.setHours(0,0,0,0);
 
-      const [allActive, allOrders, activeCount, returnedCount, completedTodayCount, activity] = await Promise.all([
-        db.order.findMany({ where: { status: 'in_progress' }, include: { current_stage: true } }),
-        db.order.findMany({ include: { category: true } }),
+      // Perform fast counts and aggregations on the DB instead of fetching all orders
+      const [
+        activeCount, 
+        returnedCount, 
+        completedTodayCount, 
+        activity,
+        ordersByStageAgg,
+        ordersByCategoryAgg,
+        statusGroupAgg,
+        recentCompletedOrders
+      ] = await Promise.all([
         db.order.count({ where: { status: 'in_progress' } }),
         db.order.count({ where: { status: 'returned' } }),
         db.order.count({ where: { status: 'completed', updated_at: { gte: today } } }),
@@ -76,13 +85,90 @@ export async function GET(req: Request) {
           },
           orderBy: { created_at: 'desc' },
           take: 30
+        }),
+        // Group by stage
+        db.order.groupBy({
+          by: ['current_stage_id'],
+          where: { status: 'in_progress' },
+          _count: { id: true }
+        }),
+        // Group by category
+        db.order.groupBy({
+          by: ['category_id'],
+          _count: { id: true }
+        }),
+        // Group by status
+        db.order.groupBy({
+          by: ['status'],
+          _count: { id: true }
+        }),
+        // For completion trend (last 7 days), just fetch id and updated_at
+        db.order.findMany({
+          where: { status: 'completed', updated_at: { gte: sevenDaysAgo } },
+          select: { updated_at: true }
         })
       ]);
 
       responseData.activityFeed = activity;
-      
+      responseData.metrics = {
+        active: activeCount,
+        returned: returnedCount,
+        completed_today: completedTodayCount
+      };
+
+      // We still need stage names and category names for the charts.
+      // Fetching small lists of stages/categories is extremely fast.
+      const [stages, categories] = await Promise.all([
+        db.workflowStage.findMany({ select: { id: true, name: true } }),
+        db.category.findMany({ select: { id: true, name: true } })
+      ]);
+      const stageNameMap = Object.fromEntries(stages.map(s => [s.id, s.name]));
+      const catNameMap = Object.fromEntries(categories.map(c => [c.id, c.name]));
+
+      responseData.charts.ordersByStage = ordersByStageAgg.map(agg => ({
+        name: stageNameMap[agg.current_stage_id] || 'Unknown',
+        count: agg._count.id
+      }));
+
+      responseData.charts.ordersByCategory = ordersByCategoryAgg.map(agg => ({
+        name: catNameMap[agg.category_id] || 'Unknown',
+        count: agg._count.id
+      }));
+
+      // Completion Trend (Last 7 days)
+      const trendMap: Record<string, number> = {};
+      for(let i=0; i<7; i++) {
+        const d = new Date(sevenDaysAgo);
+        d.setDate(d.getDate() + i);
+        const dateStr = d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+        trendMap[dateStr] = 0;
+      }
+      recentCompletedOrders.forEach(o => {
+        const dateStr = new Date(o.updated_at).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+        if (trendMap[dateStr] !== undefined) trendMap[dateStr]++;
+      });
+      responseData.charts.completionTrend = Object.entries(trendMap).map(([date, count]) => ({ date, count }));
+
+      // Status Breakdown
+      const statusMap = Object.fromEntries(statusGroupAgg.map(agg => [agg.status, agg._count.id]));
+      responseData.charts.ordersByStatus = [
+        { name: t("executing"), value: statusMap['in_progress'] || 0, color: '#E8A33D' },
+        { name: t("rejected_returned"), value: statusMap['returned'] || 0, color: '#E85C4A' },
+        { name: t("completed"), value: statusMap['completed'] || 0, color: '#3FBF7F' },
+        { name: t("cancelled"), value: statusMap['canceled'] || 0, color: '#2A2E37' }
+      ];
+
+      // Stale Orders
+      // We can't easily calculate business logic (elapsed >= estimated) in Prisma groupBy, 
+      // but we CAN fetch only active orders with their stage, instead of ALL orders.
+      // Actually `allActive` was only `in_progress` orders in the original, but pulling them all was still heavy if there are thousands.
+      // We can fetch only the fields we need.
+      const activeForStale = await db.order.findMany({
+        where: { status: 'in_progress' },
+        select: { id: true, invoice_number: true, updated_at: true, current_stage: { select: { name: true, estimated_hours: true } } }
+      });
       const now = new Date().getTime();
-      responseData.staleOrders = allActive.filter(o => {
+      responseData.staleOrders = activeForStale.filter(o => {
         const elapsedHours = (now - new Date(o.updated_at).getTime()) / (1000 * 60 * 60);
         const estimatedHours = o.current_stage.estimated_hours || 24;
         return elapsedHours >= estimatedHours;
@@ -93,63 +179,11 @@ export async function GET(req: Request) {
         estimated_hours: o.current_stage.estimated_hours || 24,
         elapsed_hours: Math.floor((now - new Date(o.updated_at).getTime()) / (1000 * 60 * 60))
       })).sort((a, b) => (b.elapsed_hours - b.estimated_hours) - (a.elapsed_hours - a.estimated_hours)).slice(0, 20);
-
-      responseData.metrics = {
-        active: activeCount,
-        returned: returnedCount,
-        completed_today: completedTodayCount
-      };
-
-      // Aggregate Orders by Stage
-      const stageMap: Record<string, number> = {};
-      allActive.forEach(o => {
-        const stageName = o.current_stage.name;
-        stageMap[stageName] = (stageMap[stageName] || 0) + 1;
-      });
-      responseData.charts.ordersByStage = Object.entries(stageMap).map(([name, count]) => ({ name, count }));
-
-      // Aggregate Orders by Category
-      const categoryMap: Record<string, number> = {};
-      allOrders.forEach(o => {
-        const catName = o.category.name;
-        categoryMap[catName] = (categoryMap[catName] || 0) + 1;
-      });
-      responseData.charts.ordersByCategory = Object.entries(categoryMap).map(([name, count]) => ({ name, count }));
-
-      // Completion Trend (Last 7 days)
-      const trendMap: Record<string, number> = {};
-      for(let i=0; i<7; i++) {
-        const d = new Date(sevenDaysAgo);
-        d.setDate(d.getDate() + i);
-        const dateStr = d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
-        trendMap[dateStr] = 0;
-      }
-      allOrders.forEach(o => {
-        if (o.status === 'completed' && o.updated_at >= sevenDaysAgo) {
-          const dateStr = new Date(o.updated_at).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
-          if (trendMap[dateStr] !== undefined) trendMap[dateStr]++;
-        }
-      });
-      responseData.charts.completionTrend = Object.entries(trendMap).map(([date, count]) => ({ date, count }));
-
-      // Status Breakdown
-      let inP = 0, ret = 0, comp = 0, canc = 0;
-      allOrders.forEach(o => {
-        if(o.status === 'in_progress') inP++;
-        if(o.status === 'returned') ret++;
-        if(o.status === 'completed') comp++;
-        if(o.status === 'canceled') canc++;
-      });
-      responseData.charts.ordersByStatus = [
-        { name: t("executing"), value: inP, color: '#E8A33D' },
-        { name: t("rejected_returned"), value: ret, color: '#E85C4A' },
-        { name: t("completed"), value: comp, color: '#3FBF7F' },
-        { name: t("cancelled"), value: canc, color: '#2A2E37' }
-      ];
     }
 
     return NextResponse.json(responseData);
   } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

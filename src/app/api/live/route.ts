@@ -12,17 +12,14 @@ export async function GET(req: Request) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const activeOrders = await db.order.findMany({
-      where: { status: { in: ['in_progress', 'returned'] } },
-      include: { current_stage: true, category: true }
-    });
-
-    const completedTodayOrders = await db.order.findMany({
-      where: { 
-        status: 'completed',
-        updated_at: { gte: today }
-      }
-    });
+    const [activeToday, completedTodayOrders, activeOrders] = await Promise.all([
+      db.order.count({ where: { status: { in: ['in_progress', 'returned'] } } }),
+      db.order.count({ where: { status: 'completed', updated_at: { gte: today } } }),
+      db.order.findMany({
+        where: { status: { in: ['in_progress', 'returned'] } },
+        include: { current_stage: true, category: true }
+      })
+    ]);
 
     let lateOrdersCount = 0;
     const now = new Date().getTime();
@@ -61,8 +58,8 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json({
-      activeToday: activeOrders.length,
-      completedToday: completedTodayOrders.length,
+      activeToday,
+      completedToday: completedTodayOrders,
       lateOrdersCount,
       urgentOrders: urgentOrdersList.slice(0, 5) // top 5
     });

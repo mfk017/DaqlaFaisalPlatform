@@ -209,6 +209,7 @@ export function DashboardContent() {
 }
 
 function OrderRow({ task }: { task: any }) {
+  const { t } = useTranslation();
   const elapsedHours = Math.floor((new Date().getTime() - new Date(task.updated_at).getTime()) / (1000 * 60 * 60));
   const estimatedHours = task.current_stage?.estimated_hours || 24;
   const isOverdue = task.status !== 'completed' && elapsedHours >= estimatedHours;

@@ -30,8 +30,13 @@ export default async function WorkloadPage() {
   });
 
   // We need to fetch OrderHistory to calculate avg completion time
+  // OPTIMIZATION: Only fetch history from the last 30 days, and only fetch needed fields.
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
   const historyForMetrics = await db.orderHistory.findMany({
     where: {
+      created_at: { gte: thirtyDaysAgo },
       OR: [
         { assigned_to_id: { in: profiles.map(p => p.id) } },
         { actor_id: { in: profiles.map(p => p.id) } }
